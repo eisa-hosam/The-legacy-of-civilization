@@ -113,7 +113,7 @@ async function registerUser(username, email, password) {
   const cred = await auth.createUserWithEmailAndPassword(cleanEmail, password);
   __justRegisteredUID = cred.user.uid;
   try { await cred.user.updateProfile({ displayName: cleanUsername }); } catch (e) {}
-  try { await cred.user.sendEmailVerification(); } catch (e) {}
+  try { await cred.user.sendEmailVerification(); } catch (e) { console.error("فشل إرسال إيميل التفعيل:", e); }
 
   await db.collection(USERS_COLLECTION).doc(cred.user.uid).set({
     username: cleanUsername,
