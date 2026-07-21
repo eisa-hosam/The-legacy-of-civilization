@@ -38,6 +38,17 @@ const USERS_COLLECTION = "museum_users";
    فتح الملف مباشرة (file://) بيمنع أي عملية تسجيل دخول أو تسجيل حساب */
 const __isFileProtocol = location.protocol === "file:";
 
+/* هل الموقع مفتوح كتطبيق مثبّت (PWA) في وضع standalone؟
+   جوجل بيمنع تسجيل الدخول (OAuth) جوّه أي تطبيق/WebView مثبّت لأسباب أمان،
+   وبيطلب من المستخدم يفتح الرابط في متصفح عادي - حتى لو التطبيق ده أصلاً شغال بمحرك كروم. */
+function isStandalonePWA() {
+  try {
+    const mql = window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
+    const iosStandalone = window.navigator && window.navigator.standalone === true; /* سفاري iOS */
+    return !!(mql || iosStandalone);
+  } catch (e) { return false; }
+}
+
 /* نخلي الجلسة محفوظة في المتصفح عشان الزائر ميضطرش يسجل دخول كل مرة يفتح فيها الموقع */
 if (!__isFileProtocol) {
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(e => {
@@ -113,7 +124,16 @@ async function registerUser(username, email, password) {
   const cred = await auth.createUserWithEmailAndPassword(cleanEmail, password);
   __justRegisteredUID = cred.user.uid;
   try { await cred.user.updateProfile({ displayName: cleanUsername }); } catch (e) {}
-  try { await cred.user.sendEmailVerification(); } catch (e) { console.error("فشل إرسال إيميل التفعيل:", e); }
+
+  /* بنتابع نجاح إرسال إيميل التفعيل من عدمه عشان نقدر نبلّغ المستخدم صراحةً
+     بدل ما نسيبه فاكر إن الإيميل اتبعت وهو ممكن يكون فشل فعليًا (كوتة، دومين غير مصرح له، إلخ) */
+  let verificationSent = false;
+  try {
+    await cred.user.sendEmailVerification();
+    verificationSent = true;
+  } catch (e) {
+    console.error("فشل إرسال إيميل التفعيل:", e);
+  }
 
   await db.collection(USERS_COLLECTION).doc(cred.user.uid).set({
     username: cleanUsername,
@@ -127,7 +147,7 @@ async function registerUser(username, email, password) {
     personality: null
   });
 
-  return cred.user;
+  return { user: cred.user, verificationSent };
 }
 
 async function loginUser(email, password) {
@@ -256,7 +276,9 @@ function showToast(msg, isError) {
   toast.classList.toggle("toast-error", !!isError);
   toast.classList.add("active");
   clearTimeout(__toastTimer);
-  __toastTimer = setTimeout(() => toast.classList.remove("active"), 4200);
+  /* الرسايل الطويلة (زي تنبيه الـ PWA) محتاجة وقت أطول للقراءة */
+  const duration = String(msg || "").length > 80 ? 8000 : 4200;
+  __toastTimer = setTimeout(() => toast.classList.remove("active"), duration);
 }
 
 /* ---------- 5) تسجيل الخروج ---------- */
@@ -934,7 +956,7 @@ document.addEventListener("DOMContentLoaded", () => {
     registerSubmitBtn.classList.add("btn-loading");
     registerSubmitBtn.disabled = true;
     try {
-      await registerUser(
+      const { verificationSent } = await registerUser(
         document.getElementById("register-username").value,
         document.getElementById("register-email").value,
         document.getElementById("register-password").value
@@ -942,6 +964,10 @@ document.addEventListener("DOMContentLoaded", () => {
       loginModal.classList.remove("active");
       document.body.style.overflow = "";
       registerForm.reset();
+      if (!verificationSent) {
+        /* الحساب اتعمل بنجاح لكن إيميل التفعيل فشل يبعت - نوضح ده صراحةً بدل ما نسيبه يفتكر إنه هيوصله */
+        showToast("تم إنشاء حسابك، لكن تعذّر إرسال إيميل التفعيل الآن. جرّب زرار (إعادة إرسال) بعد شوية.", true);
+      }
       /* فتح اختبار الشخصية هيحصل تلقائيًا من onAuthStateChanged */
     } catch (err) {
       registerError.textContent = mapAuthError(err);
@@ -1001,15 +1027,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("google-signin-btn")?.addEventListener("click", async (e) => {
     const btn = e.currentTarget;
+
+    /* لو الموقع مفتوح كتطبيق مثبّت (PWA - وضع standalone)، جوجل هيرفض تسجيل الدخول
+       ويطلب فتح الرابط في متصفح عادي - حتى لو كان أصلاً كروم من جوّه. بنستنى المستخدم
+       نفسه ونوريه رسالة واضحة ونحاول ننسخله الرابط بدل ما يشوف رسالة جوجل الغامضة. */
+    if (isStandalonePWA()) {
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(location.href);
+        copied = true;
+      } catch (e2) {}
+      showToast(
+        copied
+          ? "تسجيل الدخول بجوجل مش متاح جوّه التطبيق المثبّت. نسخنالك رابط الموقع، افتح كروم (أو أي متصفح) والصقه في الرابط، وسجّل دخولك من هناك."
+          : "تسجيل الدخول بجوجل مش متاح جوّه التطبيق المثبّت. افتح الموقع من متصفح عادي (كروم مثلًا) مش من الأيقونة المثبّتة، وسجّل دخولك من هناك.",
+        true
+      );
+      return;
+    }
+
     btn.disabled = true;
     try {
       await signInWithGoogle();
       loginModal.classList.remove("active");
       document.body.style.overflow = "";
     } catch (err) {
-      const msg = err && err.code === "auth/unauthorized-domain"
-        ? "الدخول بجوجل محتاج الموقع يكون شغال على دومين حقيقي أو localhost، مش ملف مفتوح مباشرة من الجهاز."
-        : mapAuthError(err);
+      let msg;
+      if (err && err.code === "auth/unauthorized-domain") {
+        msg = "الدخول بجوجل محتاج الموقع يكون شغال على دومين حقيقي أو localhost، مش ملف مفتوح مباشرة من الجهاز.";
+      } else if (err && (err.code === "auth/popup-blocked" || err.code === "auth/cancelled-popup-request")) {
+        msg = "المتصفح منع نافذة تسجيل الدخول (Popup). فعّل النوافذ المنبثقة لهذا الموقع وجرّب تاني.";
+      } else if (err && (err.code === "auth/operation-not-supported-in-this-environment" || err.message && /disallowed_useragent/i.test(err.message))) {
+        msg = "المتصفح أو التطبيق ده مش مسموح له بتسجيل الدخول بجوجل لأسباب أمان من جوجل نفسها. جرّب تفتح الموقع من كروم أو سفاري عادي مباشرة.";
+      } else {
+        msg = mapAuthError(err);
+      }
       showToast(msg, true);
     } finally {
       btn.disabled = false;
