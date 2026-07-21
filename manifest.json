@@ -1,0 +1,17 @@
+{
+  "name": "متحف إرث الحضارة",
+  "short_name": "متحف الحضارة",
+  "description": "متحف رقمي تفاعلي يجمع كنوز مصر القديمة وحضارات العالم",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#041233",
+  "theme_color": "#0b3d91",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

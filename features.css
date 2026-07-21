@@ -1,0 +1,297 @@
+/* =====================================================================
+   متحف إرث الحضارة - features.css
+   إضافات: الوضع الفاتح، الدليل الصوتي، إمالة 360، في مثل هذا اليوم،
+   تحدي اليوم ولوحة الصدارة، الخريطة الحقيقية، البحث الصوتي، الإشعارات
+   ===================================================================== */
+
+/* ---------- 1) الوضع الفاتح ---------- */
+html.theme-light{
+  --blue-deep:#eef2f9;
+  --blue-royal:#f6f8fc;
+  --blue-lapis:#cfe0ff;
+  --blue-glow:#5b8def;
+  --white:#0b1c33;
+  --sand:#33455e;
+}
+html.theme-light body{ background:var(--blue-deep); color:#0b1c33; }
+html.theme-light #site-nav{ background:rgba(238,242,249,.7); border-bottom-color:rgba(11,61,145,.15); }
+html.theme-light #site-nav.scrolled{ background:rgba(238,242,249,.92); }
+html.theme-light .wing-card,
+html.theme-light .modal-box,
+html.theme-light .compare-table,
+html.theme-light .timeline-map-wrap,
+html.theme-light .otd-card,
+html.theme-light .daily-card,
+html.theme-light .real-map-wrap{
+  background:#fff; color:#0b1c33; box-shadow:0 10px 30px -18px rgba(11,61,145,.25);
+}
+html.theme-light .nav-links a,
+html.theme-light .footer-links a{ color:#33455e; }
+.theme-toggle-btn{ font-size:1.15rem; }
+
+/* ---------- 2) الدليل الصوتي ---------- */
+#item-modal-audio-btn.speaking{
+  color:var(--gold); animation:audio-pulse 1s ease-in-out infinite;
+}
+@keyframes audio-pulse{
+  0%,100%{ transform:scale(1); }
+  50%{ transform:scale(1.12); }
+}
+
+/* ---------- 3) إمالة 360 على صورة القطعة ---------- */
+.item-modal-img{ perspective:900px; }
+.item-modal-img img{
+  transition:transform .15s ease-out;
+  transform-style:preserve-3d;
+  will-change:transform;
+}
+
+/* ---------- 4) في مثل هذا اليوم ---------- */
+.otd-section{ padding-top:0; }
+.otd-card{
+  max-width:760px; margin-inline:auto; padding:26px 28px; border-radius:18px;
+  background:rgba(255,255,255,.04); border:1px solid rgba(212,175,55,.25);
+  display:flex; gap:18px; align-items:flex-start;
+}
+.otd-icon{ font-size:2rem; flex:none; line-height:1; }
+.otd-date{ color:var(--gold-light); font-size:.85rem; letter-spacing:1px; margin-bottom:6px; display:block; }
+.otd-text{ color:var(--sand); line-height:1.9; }
+
+/* ---------- 5) تحدي اليوم ولوحة الصدارة ---------- */
+.daily-card{
+  max-width:760px; margin-inline:auto; padding:28px; border-radius:18px;
+  background:rgba(255,255,255,.04); border:1px solid rgba(212,175,55,.25);
+}
+.daily-q{ font-size:1.1rem; margin-bottom:18px; line-height:1.8; }
+.daily-options{ display:grid; gap:10px; margin-bottom:16px; }
+.daily-opt{
+  text-align:right; padding:12px 16px; border-radius:12px;
+  border:1px solid rgba(212,175,55,.3); background:rgba(255,255,255,.03);
+  color:var(--white,#fff); transition:background .2s, border-color .2s;
+}
+.daily-opt:hover{ background:rgba(212,175,55,.12); }
+.daily-opt.correct{ border-color:#3fbf6f; background:rgba(63,191,111,.18); }
+.daily-opt.wrong{ border-color:#e0576b; background:rgba(224,87,107,.18); }
+.daily-opt[disabled]{ pointer-events:none; opacity:.85; }
+.daily-explain{ font-size:.9rem; color:var(--sand); margin-bottom:16px; display:none; }
+.daily-explain.show{ display:block; }
+.daily-done{ font-size:.9rem; color:var(--gold-light); }
+.daily-leaderboard{ margin-top:22px; padding-top:18px; border-top:1px dashed rgba(212,175,55,.3); }
+.daily-leaderboard h4{ font-size:.95rem; margin-bottom:12px; color:var(--gold-light); }
+.daily-lb-row{
+  display:flex; justify-content:space-between; padding:7px 0;
+  border-bottom:1px solid rgba(255,255,255,.06); font-size:.9rem;
+}
+.daily-lb-row .rank{ color:var(--gold); font-weight:700; width:26px; }
+
+/* ---------- 5ب) بطل الأسبوع وشهادة التقدير ---------- */
+.weekly-champion{ margin-top:22px; padding-top:18px; border-top:1px dashed rgba(212,175,55,.3); }
+.weekly-champion h4{ font-size:.95rem; margin-bottom:12px; color:var(--gold-light); }
+.weekly-champion-card{ text-align:center; padding:14px 10px; }
+.weekly-champion-crown{ font-size:2rem; margin-bottom:6px; }
+.weekly-champion-name{ font-family:var(--font-display); font-size:1.15rem; color:var(--gold-light); margin-bottom:4px; }
+.weekly-champion-meta{ font-size:.85rem; color:var(--sand); margin-bottom:14px; }
+.weekly-champion-hint{ font-size:.8rem; color:var(--sand); opacity:.8; }
+.weekly-empty{ font-size:.9rem; color:var(--sand); text-align:center; }
+
+/* ---------- 6) خريطة المواقع الحقيقية ---------- */
+.real-map-wrap{
+  border-radius:18px; padding:18px; background:rgba(255,255,255,.03);
+  border:1px solid rgba(212,175,55,.2);
+}
+.real-map-svg{ width:100%; height:auto; display:block; }
+.real-map-dot{ cursor:pointer; outline:none; }
+.real-map-dot circle{ fill:var(--gold); transition:r .15s; }
+.real-map-dot:hover circle, .real-map-dot:focus circle{ r:6; }
+.real-map-dot text{
+  fill:var(--white,#fff); font-size:6px; font-weight:700;
+  paint-order:stroke; stroke:var(--blue-deep); stroke-width:2px; stroke-linejoin:round;
+  opacity:0; pointer-events:none; transition:opacity .15s;
+}
+.real-map-dot:hover text, .real-map-dot:focus text{ opacity:1; }
+.real-map-dot:hover, .real-map-dot:focus{ transform-box:fill-box; }
+.real-map-note{ font-size:.8rem; color:var(--sand); margin-top:10px; text-align:center; }
+
+/* ---------- 7) البحث الصوتي ---------- */
+.nav-voice-btn{
+  background:none; border:none; color:var(--sand); cursor:pointer;
+  display:flex; align-items:center; padding:4px;
+}
+.nav-voice-btn.listening{ color:var(--gold); animation:audio-pulse .8s ease-in-out infinite; }
+
+/* ---------- 8) زر تفعيل الإشعارات ---------- */
+.push-btn-wrap{ text-align:center; margin-top:14px; }
+
+/* ---------- 8ب) تقييم القطعة الأثرية بالنجوم ---------- */
+.item-rating{
+  display:flex; align-items:center; gap:12px; margin:14px 0 4px; flex-wrap:wrap;
+}
+.item-rating-stars{ display:flex; gap:4px; direction:ltr; }
+.item-rating-stars .star-btn{
+  background:none; border:none; cursor:pointer; font-size:1.5rem; line-height:1;
+  color:rgba(212,175,55,.3); padding:2px; transition:transform .15s, color .15s;
+}
+.item-rating-stars .star-btn:hover{ transform:scale(1.15); }
+.item-rating-stars .star-btn.filled{ color:var(--gold); }
+.item-rating-stars .star-btn.mine{ color:var(--gold-light); }
+.item-rating-summary{ font-size:.85rem; color:var(--ink-soft); }
+
+/* ---------- 9) خلفية زرقاء فرعونية لأقسام: في مثل هذا اليوم / تحدي اليوم / الخريطة الحقيقية ----------
+   هذه الأقسام مصممة بألوان ذهبية فاتحة (gold-light / sand / white) كانت بتتحط فوق
+   خلفية الموقع الفاتحة (papyrus) فتبقى شبه مختفية. الحل: نديها خلفية زرقاء غامقة
+   (نفس أزرق الـ hero وشريط الإحصائيات) عشان الذهبي يبان بوضوح. */
+.otd-section,
+#daily-challenge,
+#real-map{
+  background:linear-gradient(180deg, var(--blue-deep) 0%, var(--blue-royal) 55%, var(--blue-deep) 100%);
+  padding-top:52px; padding-bottom:52px;
+  border-top:1px solid var(--gold-soft); border-bottom:1px solid var(--gold-soft);
+}
+.otd-section .section-title h2,
+#daily-challenge .section-title h2,
+#real-map .section-title h2{ color:var(--white); }
+.otd-section .section-title p,
+#daily-challenge .section-title p,
+#real-map .section-title p{ color:var(--sand); }
+.otd-section .section-title .eyebrow,
+#daily-challenge .section-title .eyebrow,
+#real-map .section-title .eyebrow{ color:var(--blue-glow); }
+
+.otd-card,
+.daily-card,
+.real-map-wrap{
+  background:rgba(255,255,255,.06);
+}
+.daily-explain{ color:var(--sand); }
+.daily-lb-row{ color:var(--white); }
+.real-map-note{ color:var(--sand); }
+
+/* في الوضع الفاتح: نفس الأقسام تاخد لون أزرق فاتح بدل الغامق عشان تفضل متناسقة */
+html.theme-light .otd-section,
+html.theme-light #daily-challenge,
+html.theme-light #real-map{
+  background:linear-gradient(180deg, #eef2f9 0%, #dce6fa 55%, #eef2f9 100%);
+}
+html.theme-light .otd-section .section-title h2,
+html.theme-light #daily-challenge .section-title h2,
+html.theme-light #real-map .section-title h2{ color:#0b1c33; }
+html.theme-light .daily-lb-row{ color:#0b1c33; }
+html.theme-light .daily-opt{ color:#0b1c33; }
+html.theme-light .weekly-champion-name,
+html.theme-light .weekly-champion-meta,
+html.theme-light .weekly-champion-hint,
+html.theme-light .weekly-empty{ color:#0b1c33; }
+
+/* ---------- 9ب) حلقة مدارية متحركة حول اللوجو (تفضل شغالة طول الوقت) ---------- */
+.logo-orbit{
+  position:relative; display:flex; align-items:center; justify-content:center;
+  flex:none;
+}
+.logo-orbit-lg{ width:190px; height:190px; }
+.logo-orbit-sm{ width:54px; height:54px; }
+.logo-orbit img{ position:relative; z-index:2; width:100%; height:100%; }
+
+.logo-orbit-ring{
+  position:absolute; inset:0; border-radius:50%;
+  border:1px solid transparent;
+  background:conic-gradient(from 0deg, transparent 0%, var(--gold) 12%, transparent 24%, transparent 50%, var(--gold-light) 62%, transparent 74%, transparent 100%);
+  -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  animation:logo-orbit-spin 6s linear infinite;
+  z-index:1;
+}
+.logo-orbit-ring2{
+  inset:-10px;
+  opacity:.55;
+  animation:logo-orbit-spin-rev 9s linear infinite;
+}
+.logo-orbit-lg .logo-orbit-ring2{ inset:-16px; }
+
+@keyframes logo-orbit-spin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+@keyframes logo-orbit-spin-rev{ from{ transform:rotate(360deg); } to{ transform:rotate(0deg); } }
+
+.logo-orbit-dot{
+  position:absolute; top:50%; left:50%; width:6px; height:6px; margin:-3px 0 0 -3px;
+  border-radius:50%; background:var(--gold); box-shadow:0 0 8px 2px rgba(212,175,55,.75);
+  animation:logo-orbit-travel 6s linear infinite;
+  z-index:1;
+}
+.logo-orbit-lg .logo-orbit-dot{ width:8px; height:8px; margin:-4px 0 0 -4px; }
+.logo-orbit-dot.d1{ animation-duration:5.5s; }
+.logo-orbit-dot.d2{ animation-duration:7.5s; animation-direction:reverse; }
+.logo-orbit-dot.d3{ animation-duration:9.5s; }
+
+.logo-orbit-lg .logo-orbit-dot.d1{ --r:98px; }
+.logo-orbit-lg .logo-orbit-dot.d2{ --r:104px; }
+.logo-orbit-lg .logo-orbit-dot.d3{ --r:112px; }
+.logo-orbit-sm .logo-orbit-dot.d1{ --r:29px; }
+.logo-orbit-sm .logo-orbit-dot.d2{ --r:33px; }
+
+@keyframes logo-orbit-travel{
+  from{ transform:rotate(0deg) translateX(var(--r,90px)) rotate(0deg); }
+  to{ transform:rotate(360deg) translateX(var(--r,90px)) rotate(-360deg); }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .logo-orbit-ring, .logo-orbit-ring2, .logo-orbit-dot{ animation:none; }
+}
+
+/* ---------- 10) مبدّل اللغة ---------- */
+.nav-lang{ position:relative; }
+.nav-lang-btn{
+  display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.06);
+  border:1px solid rgba(212,175,55,.3); color:var(--white,#fff); border-radius:999px;
+  padding:6px 12px; cursor:pointer; font-size:.85rem; font-weight:700;
+}
+.nav-lang-btn:hover{ background:rgba(212,175,55,.15); }
+.nav-lang-menu{
+  position:absolute; top:calc(100% + 8px); inset-inline-end:0; min-width:150px;
+  background:var(--blue-royal,#0b1c33); border:1px solid rgba(212,175,55,.3);
+  border-radius:14px; padding:6px; display:none; flex-direction:column; gap:2px;
+  box-shadow:0 14px 34px -14px rgba(0,0,0,.5); z-index:80;
+}
+.nav-lang-menu.open{ display:flex; }
+.nav-lang-opt{
+  text-align:start; background:none; border:none; color:var(--white,#fff);
+  padding:9px 12px; border-radius:9px; cursor:pointer; font-size:.9rem;
+}
+.nav-lang-opt:hover{ background:rgba(212,175,55,.15); }
+.nav-lang-opt.active{ color:var(--gold-light); font-weight:700; }
+html.theme-light .nav-lang-btn{ color:#0b1c33; border-color:rgba(11,61,145,.25); }
+html.theme-light .nav-lang-menu{ background:#fff; }
+html.theme-light .nav-lang-opt{ color:#0b1c33; }
+
+/* ---------- 10ب) صندوق الاقتراحات ---------- */
+.suggestion-box-modal{ max-width:440px; }
+.suggestion-box-title{ font-family:var(--font-display); color:var(--blue-deep); font-size:1.25rem; margin-bottom:8px; }
+.suggestion-box-sub{ color:var(--ink-soft); font-size:.9rem; margin-bottom:18px; line-height:1.7; }
+.suggestion-login-required{
+  display:none; text-align:center; padding:22px 14px; border-radius:14px;
+  background:rgba(212,175,55,.08); border:1px dashed rgba(212,175,55,.35);
+}
+.suggestion-login-required p{ color:var(--ink-soft); font-size:.92rem; margin-bottom:16px; line-height:1.8; }
+.suggestion-as{ font-size:.85rem; color:var(--ink-soft); margin-bottom:12px; }
+.suggestion-as strong{ color:var(--blue-royal); }
+#suggestion-form input, #suggestion-form textarea{ margin-bottom:12px; }
+.suggestion-error{ color:#e0576b; font-size:.85rem; margin-bottom:10px; min-height:1em; display:none; }
+.suggestion-error.show{ display:block; }
+.suggestion-success{ color:#3fbf6f; font-size:.9rem; margin-top:14px; text-align:center; display:none; }
+.suggestion-success.show{ display:block; }
+#suggestion-submit-btn{ width:100%; justify-content:center; }
+#suggestion-submit-btn[disabled]{ opacity:.6; pointer-events:none; }
+
+/* ---------- 11) استجابة إضافية للأقسام المتقدمة (خريطة/مقارنة/أدمن/بازل) على الشاشات الصغيرة ---------- */
+@media (max-width:760px){
+  .real-map-wrap{ padding:12px; }
+  .real-map-note{ font-size:.75rem; }
+  .otd-card{ padding:20px 18px; flex-direction:column; gap:10px; }
+  .daily-card{ padding:20px 18px; }
+  .daily-q{ font-size:1rem; }
+  .nav-lang-menu{ min-width:130px; inset-inline-end:-10px; }
+  .weekly-champion-card{ padding:10px 4px; }
+}
+@media (max-width:480px){
+  .item-rating{ gap:8px; }
+  .item-rating-stars .star-btn{ font-size:1.25rem; }
+  .daily-opt{ padding:10px 12px; font-size:.92rem; }
+}
