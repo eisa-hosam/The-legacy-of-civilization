@@ -49,6 +49,18 @@ function isStandalonePWA() {
   } catch (e) { return false; }
 }
 
+/* هل الموقع مفتوح جوّه متصفح داخلي (WebView) لتطبيق زي فيسبوك/انستجرام/واتساب/تيك توك؟
+   المشكلة اللي بتحصل غالبًا هي دي بالظبط: المستخدم فاتح الموقع من "لينك" جواته تطبيق تاني
+   (مش من الجهاز/الآيقونة المثبتة)، وجوجل بيرفض تسجيل الدخول جوّه المتصفحات دي تمامًا
+   لأسباب أمان، حتى لو شكلها متصفح عادي. الحل الوحيد للزائر هو فتح الموقع بمتصفح حقيقي
+   (كروم / سفاري) مش من جوّه التطبيق. */
+function isInAppBrowserWebView() {
+  try {
+    const ua = navigator.userAgent || navigator.vendor || window.opera || "";
+    return /FBAN|FBAV|FB_IAB|Instagram|Line\/|MicroMessenger|WhatsApp|TikTok|Twitter|Snapchat|GSA\/|wv\)/i.test(ua);
+  } catch (e) { return false; }
+}
+
 /* نخلي الجلسة محفوظة في المتصفح عشان الزائر ميضطرش يسجل دخول كل مرة يفتح فيها الموقع */
 if (!__isFileProtocol) {
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(e => {
@@ -125,16 +137,7 @@ async function registerUser(username, email, password) {
   __justRegisteredUID = cred.user.uid;
   try { await cred.user.updateProfile({ displayName: cleanUsername }); } catch (e) {}
 
-  /* بنتابع نجاح إرسال إيميل التفعيل من عدمه عشان نقدر نبلّغ المستخدم صراحةً
-     بدل ما نسيبه فاكر إن الإيميل اتبعت وهو ممكن يكون فشل فعليًا (كوتة، دومين غير مصرح له، إلخ) */
-  let verificationSent = false;
-  try {
-    await cred.user.sendEmailVerification();
-    verificationSent = true;
-  } catch (e) {
-    console.error("فشل إرسال إيميل التفعيل:", e);
-  }
-
+  /* التسجيل بقى بالإيميل وكلمة السر بس، من غير إرسال أي إيميل تفعيل */
   await db.collection(USERS_COLLECTION).doc(cred.user.uid).set({
     username: cleanUsername,
     email: cleanEmail,
@@ -147,7 +150,7 @@ async function registerUser(username, email, password) {
     personality: null
   });
 
-  return { user: cred.user, verificationSent };
+  return { user: cred.user };
 }
 
 async function loginUser(email, password) {
@@ -163,41 +166,60 @@ async function resetPassword(email) {
   await auth.sendPasswordResetEmail(cleanEmail);
 }
 
-async function resendVerification() {
-  const user = auth.currentUser;
-  if (!user) return;
-  await user.sendEmailVerification();
-}
-
-/* دخول سريع بحساب Google - مرة واحدة والزائر يفضل مسجل تلقائيًا بعد كده */
+/* دخول سريع بحساب Google - مرة واحدة والزائر يفضل مسجل تلقائيًا بعد كده.
+   بنستخدم signInWithRedirect بدل signInWithPopup: النوافذ المنبثقة (popup) بتفشل
+   كتير في متصفحات الموبايل خصوصًا لما الموقع يكون اتفتح من لينك (مش من الجهاز)،
+   بسبب حجب الكوكيز/التخزين بين النافذتين. الـ redirect بيشتغل بثبات أكتر
+   في كل الحالات، والنتيجة بترجع من getRedirectResult تحت. */
 async function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  const cred = await auth.signInWithPopup(provider);
-  const user = cred.user;
-  const isNewUser = !!(cred.additionalUserInfo && cred.additionalUserInfo.isNewUser);
-  if (isNewUser) {
-    __justRegisteredUID = user.uid;
-    await db.collection(USERS_COLLECTION).doc(user.uid).set({
-      username: user.displayName || (user.email || "").split("@")[0],
-      email: normalizeEmail(user.email),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      lastVisit: firebase.firestore.FieldValue.serverTimestamp(),
-      visitsCount: 1,
-      viewedArtifacts: [],
-      favoriteArtifacts: [],
-    unlockedBadges: [],
-      personality: null
-    });
-  }
-  return user;
+  await auth.signInWithRedirect(provider);
+  /* الصفحة هتعمل reload بعد رجوع المستخدم من جوجل، والنتيجة هتتعالج
+     في المستمع اللي تحت (auth.getRedirectResult) */
 }
 
-/* ---------- 4) حالة الجلسة + الترحيب + بانر التفعيل ---------- */
+/* ننشئ مستند المستخدم في Firestore لو كان حساب جديد (يشتغل لكل من التسجيل بجوجل
+   عن طريق popup القديم -لو استخدم حد الكود ده تاني- وredirect الجديد) */
+async function ensureGoogleUserDoc(user, isNewUser) {
+  if (!isNewUser) return;
+  __justRegisteredUID = user.uid;
+  await db.collection(USERS_COLLECTION).doc(user.uid).set({
+    username: user.displayName || (user.email || "").split("@")[0],
+    email: normalizeEmail(user.email),
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastVisit: firebase.firestore.FieldValue.serverTimestamp(),
+    visitsCount: 1,
+    viewedArtifacts: [],
+    favoriteArtifacts: [],
+    unlockedBadges: [],
+    personality: null
+  });
+}
+
+/* بنمسك نتيجة الرجوع من تسجيل الدخول بجوجل (بعد الـ redirect) لما الصفحة تحمّل تاني */
+if (!__isFileProtocol) {
+  auth.getRedirectResult().then(async (cred) => {
+    if (!cred || !cred.user) return;
+    const isNewUser = !!(cred.additionalUserInfo && cred.additionalUserInfo.isNewUser);
+    await ensureGoogleUserDoc(cred.user, isNewUser);
+  }).catch((err) => {
+    let msg;
+    if (err && err.code === "auth/unauthorized-domain") {
+      msg = "الدخول بجوجل محتاج الموقع يكون شغال على دومين حقيقي أو localhost، مش ملف مفتوح مباشرة من الجهاز.";
+    } else if (err && (err.code === "auth/operation-not-supported-in-this-environment" || (err.message && /disallowed_useragent/i.test(err.message)))) {
+      msg = "المتصفح أو التطبيق ده مش مسموح له بتسجيل الدخول بجوجل لأسباب أمان من جوجل نفسها. افتح الموقع من كروم أو سفاري مباشرة، مش من جوّه تطبيق تاني.";
+    } else if (err && err.code !== "auth/no-auth-event" ) {
+      msg = mapAuthError(err);
+    }
+    if (msg) showToast(msg, true);
+  });
+}
+
+/* ---------- 4) حالة الجلسة + الترحيب ---------- */
 auth.onAuthStateChanged(async (user) => {
   if (!user) {
     currentUser = null;
     updateAuthUI();
-    updateVerifyBanner();
     return;
   }
   try {
@@ -244,7 +266,6 @@ auth.onAuthStateChanged(async (user) => {
     };
 
     updateAuthUI();
-    updateVerifyBanner();
     document.dispatchEvent(new CustomEvent("favorites-updated"));
 
     if (!__authToastShown) {
@@ -261,12 +282,6 @@ auth.onAuthStateChanged(async (user) => {
     console.warn("خطأ في تحميل بيانات الحساب:", e);
   }
 });
-
-function updateVerifyBanner() {
-  const banner = document.getElementById("verify-banner");
-  if (!banner) return;
-  banner.classList.toggle("active", !!(currentUser && !currentUser.emailVerified));
-}
 
 let __toastTimer = null;
 function showToast(msg, isError) {
@@ -287,7 +302,6 @@ function logout() {
   __authToastShown = false;
   currentUser = null;
   updateAuthUI();
-  updateVerifyBanner();
   const profileModal = document.getElementById("profile-modal");
   const adminView = document.getElementById("admin-view");
   if (profileModal) profileModal.classList.remove("active");
@@ -956,7 +970,7 @@ document.addEventListener("DOMContentLoaded", () => {
     registerSubmitBtn.classList.add("btn-loading");
     registerSubmitBtn.disabled = true;
     try {
-      const { verificationSent } = await registerUser(
+      await registerUser(
         document.getElementById("register-username").value,
         document.getElementById("register-email").value,
         document.getElementById("register-password").value
@@ -964,10 +978,6 @@ document.addEventListener("DOMContentLoaded", () => {
       loginModal.classList.remove("active");
       document.body.style.overflow = "";
       registerForm.reset();
-      if (!verificationSent) {
-        /* الحساب اتعمل بنجاح لكن إيميل التفعيل فشل يبعت - نوضح ده صراحةً بدل ما نسيبه يفتكر إنه هيوصله */
-        showToast("تم إنشاء حسابك، لكن تعذّر إرسال إيميل التفعيل الآن. جرّب زرار (إعادة إرسال) بعد شوية.", true);
-      }
       /* فتح اختبار الشخصية هيحصل تلقائيًا من onAuthStateChanged */
     } catch (err) {
       registerError.textContent = mapAuthError(err);
@@ -1008,23 +1018,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.getElementById("resend-verify-btn")?.addEventListener("click", async () => {
-    try {
-      await resendVerification();
-      showToast("تم إرسال رابط التفعيل تاني على بريدك 📩");
-    } catch (err) {
-      showToast(mapAuthError(err), true);
-    }
-  });
-  document.getElementById("refresh-verify-btn")?.addEventListener("click", async () => {
-    const user = auth.currentUser;
-    if (!user) return;
-    await user.reload();
-    if (currentUser) currentUser.emailVerified = user.emailVerified;
-    updateVerifyBanner();
-    showToast(user.emailVerified ? "تم تفعيل بريدك بنجاح! ✅" : "لسّه ما فعّلتش بريدك، افتح الرابط اللي بعتناهولك.", !user.emailVerified);
-  });
-
   document.getElementById("google-signin-btn")?.addEventListener("click", async (e) => {
     const btn = e.currentTarget;
 
@@ -1046,26 +1039,27 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    btn.disabled = true;
-    try {
-      await signInWithGoogle();
-      loginModal.classList.remove("active");
-      document.body.style.overflow = "";
-    } catch (err) {
-      let msg;
-      if (err && err.code === "auth/unauthorized-domain") {
-        msg = "الدخول بجوجل محتاج الموقع يكون شغال على دومين حقيقي أو localhost، مش ملف مفتوح مباشرة من الجهاز.";
-      } else if (err && (err.code === "auth/popup-blocked" || err.code === "auth/cancelled-popup-request")) {
-        msg = "المتصفح منع نافذة تسجيل الدخول (Popup). فعّل النوافذ المنبثقة لهذا الموقع وجرّب تاني.";
-      } else if (err && (err.code === "auth/operation-not-supported-in-this-environment" || err.message && /disallowed_useragent/i.test(err.message))) {
-        msg = "المتصفح أو التطبيق ده مش مسموح له بتسجيل الدخول بجوجل لأسباب أمان من جوجل نفسها. جرّب تفتح الموقع من كروم أو سفاري عادي مباشرة.";
-      } else {
-        msg = mapAuthError(err);
-      }
-      showToast(msg, true);
-    } finally {
-      btn.disabled = false;
+    /* نفس المشكلة بتحصل لما اللينك يتفتح جوّه متصفح تطبيق تاني (واتساب/فيسبوك/انستجرام..)
+       حتى لو مش مثبّت كـ PWA - جوجل بيرفض تسجيل الدخول جوّه المتصفحات دي تمامًا. */
+    if (isInAppBrowserWebView()) {
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(location.href);
+        copied = true;
+      } catch (e2) {}
+      showToast(
+        copied
+          ? "تسجيل الدخول بجوجل مش متاح جوّه متصفح التطبيق ده (واتساب/فيسبوك/انستجرام..). نسخنالك رابط الموقع، افتح كروم أو سفاري والصقه، وسجّل دخولك من هناك. تقدر برضه تسجّل بالإيميل وكلمة السر من نفس الشاشة دي."
+          : "تسجيل الدخول بجوجل مش متاح جوّه متصفح التطبيق ده (واتساب/فيسبوك/انستجرام..). افتح الموقع من كروم أو سفاري مباشرة وسجّل دخولك من هناك، أو استخدم التسجيل بالإيميل وكلمة السر من نفس الشاشة دي.",
+        true
+      );
+      return;
     }
+
+    /* signInWithRedirect بيودّي المستخدم لصفحة جوجل ويرجعه تاني بعدها بريفريش،
+       فمفيش داعي لـ try/catch هنا - أي خطأ هيتلقط في auth.getRedirectResult فوق. */
+    btn.disabled = true;
+    await signInWithGoogle();
   });
 
   document.getElementById("nav-user-chip")?.addEventListener("click", openProfileModal);

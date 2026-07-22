@@ -514,19 +514,6 @@ h1,h2,h3,h4{ font-family:var(--font-display); line-height:1.3; }
 .auth-forgot{ align-self:center; font-size:.82rem; color:var(--blue-royal); text-decoration:underline; margin-top:-4px; }
 .auth-forgot:hover{ color:var(--gold); }
 
-.verify-banner{
-  position:fixed; inset-inline:0; top:0; z-index:1100; display:none; align-items:center; justify-content:center;
-  gap:14px; flex-wrap:wrap; padding:12px 20px; background:linear-gradient(90deg,#8a5a00,#b9860b);
-  color:#fff8e6; font-size:.86rem; text-align:center; box-shadow:0 6px 20px -6px rgba(0,0,0,.4);
-}
-.verify-banner.active{ display:flex; }
-.verify-banner-actions{ display:flex; gap:10px; }
-.verify-banner-actions button{
-  padding:6px 14px; border-radius:999px; background:rgba(255,255,255,.15); color:#fff8e6;
-  font-weight:700; font-size:.8rem; transition:.3s; white-space:nowrap;
-}
-.verify-banner-actions button:hover{ background:rgba(255,255,255,.3); }
-
 .auth-toast{
   position:fixed; bottom:26px; inset-inline-end:26px; z-index:1200; max-width:320px;
   padding:14px 20px; border-radius:var(--radius-sm); background:var(--blue-deep); color:var(--gold-light);
