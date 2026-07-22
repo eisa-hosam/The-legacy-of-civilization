@@ -2199,8 +2199,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const puzzleTitle = document.getElementById('puzzle-title');
   const PUZZLE_SIZE = 3;
   let puzzleOrder = [], puzzleImgSrc = '', puzzleSelected = null;
+  let puzzleItem = null, puzzleWingKey = '', puzzleAlreadyDone = false;
 
   function shufflePuzzle(){
+    puzzleAlreadyDone = false;
     puzzleOrder = Array.from({ length: PUZZLE_SIZE * PUZZLE_SIZE }, (_, i) => i);
     do {
       for (let i = puzzleOrder.length - 1; i > 0; i--) {
@@ -2235,11 +2237,51 @@ document.addEventListener('DOMContentLoaded', () => {
     puzzleSelected = null;
     renderPuzzle();
     if (puzzleOrder.every((v, i) => v === i) && puzzleStatus) {
-      puzzleStatus.textContent = '🎉 برافو! رمّمت القطعة زي عالم آثار محترف';
+      onPuzzleSolved();
     }
+  }
+  function onPuzzleSolved(){
+    if (puzzleAlreadyDone) return;
+    puzzleAlreadyDone = true;
+    const itemTitle = (puzzleItem && puzzleItem.t) || 'القطعة الأثرية';
+
+    if (!window.MuseumAuth || !window.MuseumAuth.isLoggedIn()) {
+      puzzleStatus.innerHTML = `
+        <p>🎉 برافو! رمّمت القطعة زي عالم آثار محترف</p>
+        <p style="margin-top:8px;font-size:.9rem;">سجّل دخولك عشان يتحفظلك الإنجاز ده وتقدر تنزّل شهادتك 🎖️</p>
+      `;
+      return;
+    }
+
+    puzzleStatus.innerHTML = `<p>🎉 برافو! رمّمت القطعة زي عالم آثار محترف</p>
+      <p style="margin-top:8px;font-size:.9rem;">جارٍ تسجيل إنجازك...</p>`;
+
+    window.MuseumAuth.logArtifactRestoration(puzzleItem, puzzleWingKey).then((ok) => {
+      if (ok) {
+        puzzleStatus.innerHTML = `
+          <p>🎉 برافو! رمّمت القطعة زي عالم آثار محترف</p>
+          <p style="margin-top:8px;font-size:.9rem;color:var(--gold-light);">✔️ تم تسجيل إنجاز الترميم في صفحتك الشخصية</p>
+          <button type="button" class="btn btn-gold btn-sm" id="puzzle-cert-btn" style="margin-top:12px;">🎖️ نزّل شهادة الإنجاز</button>
+        `;
+        document.getElementById('puzzle-cert-btn')?.addEventListener('click', () => {
+          window.MuseumAuth.downloadRestorationCertificate(itemTitle);
+        });
+      } else {
+        puzzleStatus.innerHTML = `
+          <p>🎉 برافو! رمّمت القطعة زي عالم آثار محترف</p>
+          <p style="margin-top:8px;font-size:.9rem;">تعذّر حفظ الإنجاز، بس تقدر تنزّل شهادتك دلوقتي 🎖️</p>
+          <button type="button" class="btn btn-gold btn-sm" id="puzzle-cert-btn" style="margin-top:12px;">🎖️ نزّل شهادة الإنجاز</button>
+        `;
+        document.getElementById('puzzle-cert-btn')?.addEventListener('click', () => {
+          window.MuseumAuth.downloadRestorationCertificate(itemTitle);
+        });
+      }
+    });
   }
   function openPuzzle(item, wingKey){
     if (!puzzleView || !item) return;
+    puzzleItem = item; puzzleWingKey = wingKey || 'egypt';
+    puzzleAlreadyDone = false;
     puzzleImgSrc = pickItemImage(item) || placeholderImg(wingKey || 'egypt');
     if (puzzleTitle) puzzleTitle.textContent = 'رمّم: ' + (item.t || '');
     shufflePuzzle();

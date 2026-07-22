@@ -919,6 +919,8 @@ footer .footer-links a:hover{ opacity:1; color:var(--gold-light); }
 .puzzle-tile.selected{ border-color:var(--gold); transform:scale(.94); }
 .puzzle-tile.correct{ border-color:#1e7145; }
 .puzzle-status{ text-align:center; font-weight:700; color:var(--blue-deep); font-size:1.05rem; margin-top:6px; }
+.puzzle-status p{ margin:0; }
+.puzzle-status p + p{ font-weight:500; }
 
 /* =====================================================================
    19) لوحة إمكانية الوصول

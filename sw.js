@@ -2,7 +2,7 @@
    يخزن الأصول الأساسية (HTML/CSS/JS/الشعار) عشان الموقع يفتح حتى بدون إنترنت،
    ويستخدم شبكة أولاً لصفحات الأدمن/الحساب (Firebase) عشان تفضل محدثة دايمًا. */
 
-const CACHE_NAME = 'museum-heritage-v3';
+const CACHE_NAME = 'museum-heritage-v4';
 const CORE_ASSETS = [
   './',
   './index.html',

@@ -341,6 +341,104 @@ async function logArtifactView(item, wingKey) {
     console.warn("تعذّر تسجيل مشاهدة القطعة:", e);
   }
 }
+/* ---------- 6أ-2) تسجيل ترميم قطعة (لعبة البازل) ---------- */
+async function logArtifactRestoration(item, wingKey) {
+  if (!currentUser || !item) return false;
+  const title = item.t || "قطعة أثرية";
+  const meta = WING_META[wingKey] || { name: wingKey, emoji: "⭐" };
+  const entry = {
+    wingKey, wingName: meta.name, emoji: meta.emoji,
+    title, restoredAt: new Date().toISOString()
+  };
+  try {
+    const ref = db.collection(USERS_COLLECTION).doc(currentUser.uid);
+    const snap = await ref.get();
+    if (!snap.exists) return false;
+    const data = snap.data();
+    const list = Array.isArray(data.restoredArtifacts) ? data.restoredArtifacts : [];
+    list.unshift(entry);
+    while (list.length > 150) list.pop();
+    await ref.update({ restoredArtifacts: list, restoredCount: list.length });
+    computeAndSyncBadges(currentUser.uid);
+    return true;
+  } catch (e) {
+    console.warn("تعذّر تسجيل الترميم:", e);
+    return false;
+  }
+}
+
+/* ---------- 6أ-3) شهادة إنجاز ترميم (تُنزَّل كصورة PNG) ---------- */
+function wrapRestoreCertText(ctx2d, text, x, y, maxWidth, lineHeight) {
+  const words = String(text).split(" ");
+  let line = "", lines = [];
+  words.forEach(word => {
+    const test = line ? line + " " + word : word;
+    if (ctx2d.measureText(test).width > maxWidth && line) { lines.push(line); line = word; }
+    else line = test;
+  });
+  if (line) lines.push(line);
+  lines.forEach((l, i) => ctx2d.fillText(l, x, y + i * lineHeight));
+}
+function downloadRestorationCertificate(username, itemTitle) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1600; canvas.height = 1131;
+  const c = canvas.getContext("2d");
+
+  const grad = c.createLinearGradient(0, 0, 1600, 1131);
+  grad.addColorStop(0, "#041233"); grad.addColorStop(0.55, "#0b3d91"); grad.addColorStop(1, "#041233");
+  c.fillStyle = grad; c.fillRect(0, 0, 1600, 1131);
+
+  c.strokeStyle = "#d4af37"; c.lineWidth = 6;
+  c.strokeRect(40, 40, 1520, 1051);
+  c.lineWidth = 2;
+  c.strokeRect(64, 64, 1472, 1003);
+
+  c.textAlign = "center"; c.direction = "rtl";
+
+  c.fillStyle = "#f3d97a"; c.font = "600 30px Cairo, sans-serif";
+  c.fillText("متحف إرث الحضارة", 800, 175);
+
+  c.fillStyle = "#d4af37"; c.font = '700 60px "Reem Kufi", Amiri, serif';
+  c.fillText("🛠️ شهادة إنجاز ترميم", 800, 300);
+
+  c.fillStyle = "rgba(255,255,255,.85)"; c.font = "400 30px Cairo, sans-serif";
+  c.fillText("تُمنح هذه الشهادة إلى", 800, 420);
+
+  c.fillStyle = "#fff"; c.font = "700 62px Cairo, sans-serif";
+  c.fillText(username || "زائر", 800, 510);
+
+  c.fillStyle = "rgba(255,255,255,.85)"; c.font = "400 28px Cairo, sans-serif";
+  wrapRestoreCertText(
+    c,
+    `تقديرًا لنجاحه في ترميم القطعة الأثرية "${itemTitle || "قطعة أثرية"}" بمتحف إرث الحضارة، إثباتًا لمهارته ودقّته في لعبة الترميم.`,
+    800, 610, 1200, 42
+  );
+
+  c.strokeStyle = "rgba(212,175,55,.5)"; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(1050, 900); c.lineTo(1350, 900); c.stroke();
+  c.fillStyle = "#f3d97a"; c.font = "600 28px Cairo, sans-serif";
+  c.fillText("عيسى حسام", 1200, 945);
+  c.fillStyle = "rgba(255,255,255,.7)"; c.font = "400 20px Cairo, sans-serif";
+  c.fillText("مؤسس متحف إرث الحضارة", 1200, 975);
+
+  c.beginPath(); c.moveTo(250, 900); c.lineTo(550, 900); c.stroke();
+  c.fillStyle = "#f3d97a"; c.font = "600 28px Cairo, sans-serif";
+  c.fillText(new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }), 400, 945);
+  c.fillStyle = "rgba(255,255,255,.7)"; c.font = "400 20px Cairo, sans-serif";
+  c.fillText("تاريخ الإصدار", 400, 975);
+
+  c.fillStyle = "#d4af37"; c.font = "500 22px Cairo, sans-serif";
+  c.fillText("🏛️ المتحف الرقمي التفاعلي — متحف إرث الحضارة", 800, 1060);
+
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `شهادة-ترميم-${username || "زائر"}.png`;
+    a.click();
+  }, "image/png");
+}
+
 /* ---------- 6ب) المفضلة (Favorites) ---------- */
 function isFavorite(wingKey, title) {
   if (!currentUser || !Array.isArray(currentUser.favorites)) return false;
@@ -447,7 +545,9 @@ window.MuseumAuth = {
   isFavorite: (wingKey, title) => isFavorite(wingKey, title),
   getArtifactRating: (item, wingKey) => getArtifactRating(item, wingKey),
   rateArtifact: (item, wingKey, value) => rateArtifact(item, wingKey, value),
-  isLoggedIn: () => !!currentUser
+  isLoggedIn: () => !!currentUser,
+  logArtifactRestoration: (item, wingKey) => logArtifactRestoration(item, wingKey),
+  downloadRestorationCertificate: (itemTitle) => downloadRestorationCertificate(currentUser ? currentUser.username : "زائر", itemTitle)
 };
 
 /* ---------- 7) اختبار الشخصية التاريخية ---------- */
@@ -646,7 +746,9 @@ const BADGES = [
   { id: "collector_5", emoji: "❤️", name: "جامع الكنوز", desc: "أضفت 5 قطع للمفضلة" },
   { id: "quiz_done", emoji: "🎭", name: "اعرف نفسك", desc: "خلّصت اختبار الشخصية التاريخية" },
   { id: "multi_wing", emoji: "🌍", name: "رحّالة الحضارات", desc: "استكشفت قطعًا من 3 أجنحة مختلفة على الأقل" },
-  { id: "all_wings", emoji: "🗺️", name: "سيّد الحضارات", desc: "استكشفت قطعًا من كل أجنحة المتحف" }
+  { id: "all_wings", emoji: "🗺️", name: "سيّد الحضارات", desc: "استكشفت قطعًا من كل أجنحة المتحف" },
+  { id: "restorer_1", emoji: "🛠️", name: "أول ترميم", desc: "رمّمت أول قطعة أثرية في لعبة البازل" },
+  { id: "restorer_10", emoji: "⚒️", name: "خبير الترميم", desc: "رمّمت 10 قطع أثرية في لعبة البازل" }
 ];
 function checkBadge(id, data) {
   const viewed = Array.isArray(data.viewedArtifacts) ? data.viewedArtifacts : [];
@@ -661,6 +763,8 @@ function checkBadge(id, data) {
     case "quiz_done": return !!(data.personality && data.personality.name);
     case "multi_wing": return wingsSeen >= 3;
     case "all_wings": return wingsSeen >= 6;
+    case "restorer_1": return (data.restoredCount || 0) >= 1;
+    case "restorer_10": return (data.restoredCount || 0) >= 10;
     default: return false;
   }
 }
