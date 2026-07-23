@@ -470,3 +470,129 @@
     });
   });
 })();
+
+/* =====================================================================
+   ترجمة المحتوى الديناميكي (القطع/الأجنحة/الألعاب/الشات..إلخ)
+   بما إن بيانات القطع الأثرية ضخمة ومكتوبة عربي بس في script.js، بدل ما
+   نترجمها يدويًا سطر سطر، بنترجمها لحظيًا وقت التصفح عن طريق خدمة ترجمة
+   مجانية (MyMemory)، مع تخزين مؤقت (cache) في localStorage عشان منبعتش
+   نفس الجملة مرتين. النصوص اللي متحكومة بـ data-i18n بنتجاهلها هنا لأنها
+   أصلاً مترجمة بالقاموس فوق.
+   ===================================================================== */
+(function () {
+  'use strict';
+
+  const ARABIC_RE = /[\u0600-\u06FF\u0750-\u077F]/;
+  const SKIP_SELECTOR = '[data-i18n],[data-i18n-placeholder],[data-i18n-title],[data-i18n-aria],.no-translate,script,style,noscript';
+  const CACHE_PREFIX = 'mt_cache_v1_';
+  const trackedNodes = new Set();
+  let debounceTimer = null;
+  let translateGeneration = 0;
+
+  function hashStr(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+  }
+
+  function readCache(lang, text) {
+    try { return localStorage.getItem(CACHE_PREFIX + lang + '_' + hashStr(text)); }
+    catch (e) { return null; }
+  }
+  function writeCache(lang, text, translated) {
+    try { localStorage.setItem(CACHE_PREFIX + lang + '_' + hashStr(text), translated); }
+    catch (e) {}
+  }
+
+  function collectArabicTextNodes(root) {
+    const found = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (trackedNodes.has(node)) return NodeFilter.FILTER_REJECT;
+        const val = node.nodeValue;
+        if (!val || !ARABIC_RE.test(val)) return NodeFilter.FILTER_REJECT;
+        const parent = node.parentElement;
+        if (!parent || parent.closest(SKIP_SELECTOR)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    let n;
+    while ((n = walker.nextNode())) found.push(n);
+    return found;
+  }
+
+  async function fetchTranslation(text, lang) {
+    const cached = readCache(lang, text);
+    if (cached) return cached;
+    try {
+      const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.slice(0, 480)) + '&langpair=ar|' + lang;
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const data = await res.json();
+      const translated = data && data.responseData && data.responseData.translatedText;
+      if (translated) { writeCache(lang, text, translated); return translated; }
+    } catch (e) { /* هنسيب النص العربي زي ما هو لو الترجمة فشلت */ }
+    return null;
+  }
+
+  async function syncNode(node, lang, generation) {
+    if (node.__mtOrig == null) node.__mtOrig = node.nodeValue;
+    const original = node.__mtOrig;
+    const text = original.trim();
+    if (!text) { node.__mtLang = lang; return; }
+
+    if (lang === 'ar') {
+      node.nodeValue = original;
+      node.__mtLang = 'ar';
+      return;
+    }
+    const translated = await fetchTranslation(text, lang);
+    if (generation !== translateGeneration) return; // المستخدم غيّر اللغة تاني قبل ما نخلص
+    if (translated) node.nodeValue = original.replace(text, translated);
+    node.__mtLang = lang;
+  }
+
+  async function runQueue(nodes, lang, generation) {
+    const CONCURRENCY = 4;
+    let idx = 0;
+    async function worker() {
+      while (idx < nodes.length) {
+        const node = nodes[idx++];
+        if (generation !== translateGeneration) return;
+        await syncNode(node, lang, generation);
+      }
+    }
+    const workers = [];
+    for (let i = 0; i < Math.min(CONCURRENCY, nodes.length); i++) workers.push(worker());
+    await Promise.all(workers);
+  }
+
+  function applyDynamicTranslation(lang) {
+    translateGeneration++;
+    const generation = translateGeneration;
+    const fresh = collectArabicTextNodes(document.body);
+    fresh.forEach((n) => trackedNodes.add(n));
+
+    const toSync = [];
+    trackedNodes.forEach((node) => {
+      if (!node.isConnected) { trackedNodes.delete(node); return; }
+      if (node.__mtLang !== lang) toSync.push(node);
+    });
+    if (toSync.length) runQueue(toSync, lang, generation);
+  }
+
+  function scheduleTranslatePass() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      applyDynamicTranslation(window.MUSEUM_LANG || 'ar');
+    }, 220);
+  }
+
+  document.addEventListener('museum:langchange', scheduleTranslatePass);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    scheduleTranslatePass();
+    const observer = new MutationObserver(scheduleTranslatePass);
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  });
+})();

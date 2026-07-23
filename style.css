@@ -160,7 +160,16 @@ h1,h2,h3,h4{ font-family:var(--font-display); line-height:1.3; }
   50%{ filter:drop-shadow(0 0 22px rgba(212,175,55,.8)); }
 }
 .footer-brand .brand-logo{ width:46px; height:46px; }
-.nav-links{ display:flex; align-items:center; gap:clamp(10px,2vw,28px); }
+.nav-links{
+  position:fixed; inset-block:0 0; inset-inline-end:0; width:min(78vw,320px);
+  background:var(--blue-deep); flex-direction:column; align-items:flex-start;
+  padding:100px 30px 30px; gap:22px; translate:-100% 0; transition:translate .45s var(--ease);
+  box-shadow:-20px 0 50px rgba(0,0,0,.35); display:flex; z-index:499;
+}
+.nav-links.open{ translate:0 0; }
+/* الموقع بيدعم تبديل اللغة (RTL/LTR)؛ في وضع LTR القائمة بتتقفل ناحية اليمين مش الشمال */
+html[dir="ltr"] .nav-links{ translate:100% 0; }
+html[dir="ltr"] .nav-links.open{ translate:0 0; }
 .nav-links a{
   color:var(--sand); font-size:.95rem; position:relative; padding:6px 2px;
   transition:color .3s;
@@ -173,9 +182,17 @@ h1,h2,h3,h4{ font-family:var(--font-display); line-height:1.3; }
 .nav-links a:hover{ color:var(--gold-light); }
 .nav-links a:hover::after{ width:100%; }
 .nav-toggle{
-  display:none; flex-direction:column; gap:5px; width:32px; z-index:501;
+  display:flex; flex-direction:column; gap:5px; width:32px; z-index:501;
 }
 .nav-toggle span{ height:2px; background:var(--gold); border-radius:2px; transition:.35s var(--ease); }
+.nav-toggle.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+.nav-toggle.open span:nth-child(2){ opacity:0; }
+.nav-toggle.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+.nav-links-overlay{
+  position:fixed; inset:0; background:rgba(4,10,26,.55); z-index:498;
+  opacity:0; visibility:hidden; transition:opacity .35s var(--ease), visibility .35s var(--ease);
+}
+.nav-links-overlay.open{ opacity:1; visibility:visible; }
 
 /* ---------- 5) قسم البطل ---------- */
 .pharaoh-hero{
@@ -186,15 +203,13 @@ h1,h2,h3,h4{ font-family:var(--font-display); line-height:1.3; }
     linear-gradient(180deg, var(--blue-deep) 0%, var(--blue-royal) 55%, var(--blue-deep) 100%);
   isolation:isolate;
 }
-.hero-glow{
-  position:absolute; top:-20%; left:50%; translate:-50% 0;
-  width:900px; height:900px; border-radius:50%;
-  background:radial-gradient(circle, rgba(212,175,55,.25), transparent 65%);
-  filter:blur(10px); animation:pulse-glow 6s ease-in-out infinite;
+.logo-orbit.hero-logo{
+  margin:0 auto 26px; width:150px; height:150px;
+  filter:drop-shadow(0 10px 30px rgba(212,175,55,.35));
 }
-@keyframes pulse-glow{
-  0%,100%{ opacity:.6; transform:translate(-50%,0) scale(1); }
-  50%{ opacity:1; transform:translate(-50%,0) scale(1.08); }
+.hero-logo-img{ position:relative; z-index:2; width:100%; height:100%; object-fit:contain; }
+@media (max-width:640px){
+  .logo-orbit.hero-logo{ width:110px; height:110px; margin-bottom:18px; }
 }
 .hero-pyramids{
   position:absolute; inset-inline:0; bottom:0; height:38%;
@@ -503,6 +518,29 @@ h1,h2,h3,h4{ font-family:var(--font-display); line-height:1.3; }
 .auth-divider{ display:flex; align-items:center; gap:12px; margin:16px 0; color:var(--ink-soft); font-size:.8rem; }
 .auth-divider::before, .auth-divider::after{ content:''; flex:1; height:1px; background:rgba(11,61,145,.15); }
 
+/* ---------- زر جوجل كطريقة الدخول الموصى بها ---------- */
+.auth-recommended{
+  border:1.5px solid rgba(11,61,145,.25); border-radius:16px; padding:16px;
+  background:linear-gradient(120deg, rgba(11,61,145,.05), rgba(212,175,55,.08));
+  display:flex; flex-direction:column; gap:10px; margin-bottom:16px;
+}
+.btn-google-lg{ padding:14px 20px; font-size:.98rem; background:var(--white); box-shadow:0 6px 16px -8px rgba(11,61,145,.25); }
+.auth-recommended-badge{ text-align:center; font-size:.78rem; font-weight:700; color:#1a7a44; }
+
+/* ---------- زر الطريقة البديلة (إيميل/كلمة سر) ---------- */
+.auth-alt-toggle{
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px 6px; background:none; border:none; cursor:pointer;
+  color:var(--ink-soft); font-size:.85rem; font-weight:600; text-decoration:underline;
+  text-decoration-color:rgba(11,61,145,.25); text-underline-offset:3px;
+}
+.auth-alt-toggle:hover{ color:var(--blue-royal); }
+.auth-alt-toggle-arrow{ transition:transform .25s; text-decoration:none; font-size:.9rem; }
+.auth-alt-toggle.open .auth-alt-toggle-arrow{ transform:rotate(180deg); }
+.auth-alt-panel{ display:none; opacity:0; transition:opacity .25s ease; }
+.auth-alt-panel.open{ display:block; opacity:1; margin-top:8px; animation:auth-alt-fade .25s ease; }
+@keyframes auth-alt-fade{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:translateY(0); } }
+
 .auth-tabs{ display:flex; gap:8px; margin-bottom:18px; background:rgba(11,61,145,.06); border-radius:999px; padding:5px; }
 .auth-tab{
   flex:1; padding:10px 14px; border-radius:999px; font-weight:700; font-size:.88rem;
@@ -565,7 +603,7 @@ footer .footer-links a:hover{ opacity:1; color:var(--gold-light); }
 }
 
 /* ---------- 12) أزرار عائمة ---------- */
-.fab-group{ position:fixed; bottom:26px; left:26px; z-index:400; display:flex; flex-direction:column; gap:12px; }
+.fab-group{ position:fixed; bottom:92px; left:26px; z-index:400; display:flex; flex-direction:column; gap:12px; }
 .fab-group-right{ left:auto; right:26px; }
 .fab{
   width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center;
@@ -576,6 +614,35 @@ footer .footer-links a:hover{ opacity:1; color:var(--gold-light); }
 #to-top{ opacity:0; visibility:hidden; translate:0 20px; }
 #to-top.show{ opacity:1; visibility:visible; translate:0 0; }
 .fab:hover{ transform:translateY(-4px) scale(1.05); }
+
+/* الاختصارات (الأزرار العائمة) متبقاش ظاهرة طول الوقت - بتتخبى وبتتفتح
+   بس لما الزائر يدوس على زرار القائمة (☰) العائم */
+.fab-group .fab{
+  opacity:0; visibility:hidden; pointer-events:none;
+  transform:scale(.4); transition:opacity .3s var(--ease), transform .3s var(--ease), visibility .3s;
+}
+.fab-group .fab#to-top{ transform:scale(.4) translateY(20px); }
+body.fabs-open .fab-group .fab{
+  opacity:1; visibility:visible; pointer-events:auto; transform:scale(1);
+}
+body.fabs-open .fab-group .fab#to-top.show{ transform:scale(1) translateY(0); }
+body.fabs-open .fab-group .fab#to-top:not(.show){ opacity:0; visibility:hidden; pointer-events:none; }
+/* تأخير بسيط متدرّج لكل زرار عشان يبانوا "بيتفتحوا" مش بيظهروا فجأة كلهم مع بعض */
+.fab-group .fab:nth-child(1){ transition-delay:0s; }
+.fab-group .fab:nth-child(2){ transition-delay:.05s; }
+.fab-group .fab:nth-child(3){ transition-delay:.1s; }
+
+.fab-menu-toggle{
+  position:fixed; bottom:26px; left:26px; z-index:401;
+}
+.fab-menu-icon{ display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; }
+.fab-menu-icon span{
+  display:block; width:20px; height:2px; border-radius:2px; background:var(--blue-deep);
+  transition:transform .3s var(--ease), opacity .3s var(--ease);
+}
+.fab-menu-toggle[aria-expanded="true"] .fab-menu-icon span:nth-child(1){ transform:translateY(6px) rotate(45deg); }
+.fab-menu-toggle[aria-expanded="true"] .fab-menu-icon span:nth-child(2){ opacity:0; }
+.fab-menu-toggle[aria-expanded="true"] .fab-menu-icon span:nth-child(3){ transform:translateY(-6px) rotate(-45deg); }
 
 /* ---------- 13) تأثيرات الظهور عند التمرير ---------- */
 .reveal{ opacity:0; transform:translateY(36px); transition:opacity .8s var(--ease), transform .8s var(--ease); }
@@ -598,17 +665,6 @@ footer .footer-links a:hover{ opacity:1; color:var(--gold-light); }
   .stats-grid{ grid-template-columns:repeat(2,1fr); row-gap:28px; }
 }
 @media (max-width:760px){
-  .nav-links{
-    position:fixed; inset-block:0 0; inset-inline-end:0; width:min(78vw,320px);
-    background:var(--blue-deep); flex-direction:column; align-items:flex-start;
-    padding:100px 30px 30px; gap:22px; translate:100% 0; transition:translate .45s var(--ease);
-    box-shadow:-20px 0 50px rgba(0,0,0,.35);
-  }
-  .nav-links.open{ translate:0 0; }
-  .nav-toggle{ display:flex; }
-  .nav-toggle.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
-  .nav-toggle.open span:nth-child(2){ opacity:0; }
-  .nav-toggle.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
   .footer-grid{ grid-template-columns:1fr; }
   .section{ padding:70px 0; }
 }
@@ -1006,6 +1062,44 @@ html.a11y-contrast a, html.a11y-contrast h1, html.a11y-contrast h2, html.a11y-co
 
 /* ---------- 19ب) نافذة تسجيل الدخول ---------- */
 .login-modal-box{ max-width:440px; }
+
+/* ---------- شكل تسجيل الدخول الجديد: بطاقة داكنة + شعار مداري متوهج ---------- */
+.futuristic-login{
+  background:
+    radial-gradient(circle at 50% 0%, rgba(59,130,246,.35), transparent 62%),
+    linear-gradient(180deg, var(--blue-deep) 0%, #050f24 65%, #030a1c 100%);
+  border:1px solid var(--gold-soft);
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.65), 0 0 0 1px rgba(212,175,55,.08) inset;
+}
+.futuristic-login .modal-close{ background:rgba(255,255,255,.08); color:var(--gold-light); }
+.futuristic-login .modal-close:hover{ background:rgba(255,255,255,.16); }
+.futuristic-login-head{ display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:22px; }
+.futuristic-login-head .logo-orbit{ margin-bottom:14px; }
+.futuristic-login-title{
+  color:var(--gold-light); font-size:1.6rem; margin-bottom:6px;
+  text-shadow:0 0 18px rgba(243,217,122,.45);
+}
+.futuristic-login .modal-tag{ color:var(--blue-glow); margin-bottom:0; }
+.futuristic-login .modal-fact{ color:var(--sand); background:rgba(255,255,255,.05); border-inline-start-color:var(--gold); }
+.futuristic-login .auth-alt-toggle{ color:var(--sand); text-decoration-color:rgba(243,217,122,.3); }
+.futuristic-login .auth-alt-toggle:hover{ color:var(--gold-light); }
+.futuristic-login .auth-recommended{
+  border-color:rgba(212,175,55,.35);
+  background:linear-gradient(120deg, rgba(255,255,255,.05), rgba(212,175,55,.1));
+}
+.futuristic-login .auth-recommended-badge{ color:#7be3a6; }
+.futuristic-login .auth-tabs{ background:rgba(255,255,255,.06); }
+.futuristic-login .auth-tab{ color:var(--sand); }
+.futuristic-login .auth-tab.active{ background:var(--gold); color:var(--blue-deep); box-shadow:none; }
+.futuristic-login .modal-box p,
+.futuristic-login p{ color:var(--sand); }
+.futuristic-login input{
+  background:rgba(255,255,255,.06); border:1px solid rgba(212,175,55,.3); color:var(--white);
+}
+.futuristic-login input::placeholder{ color:rgba(242,232,207,.55); }
+.futuristic-login input:focus{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,175,55,.15); }
+.futuristic-login .auth-forgot{ color:var(--sand); }
+.futuristic-login .auth-forgot:hover{ color:var(--gold-light); }
 .login-error{ color:#c0392b; min-height:1em; }
 #login-submit-btn.btn-loading{ opacity:.65; pointer-events:none; }
 
@@ -1024,6 +1118,13 @@ html.a11y-contrast a, html.a11y-contrast h1, html.a11y-contrast h2, html.a11y-co
 .profile-joined{ color:var(--ink-soft); font-size:.78rem; opacity:.8; }
 
 .profile-stats-row{ display:flex; gap:14px; margin-bottom:22px; }
+.profile-verify-banner{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  padding:12px 16px; border-radius:var(--radius-sm); margin-bottom:18px;
+  background:linear-gradient(120deg, rgba(224,87,107,.1), rgba(212,175,55,.1));
+  border:1px solid rgba(224,87,107,.3); font-size:.85rem; color:var(--ink-soft);
+}
+.profile-verify-banner #profile-resend-verify-btn{ padding:8px 14px; font-size:.8rem; flex:none; }
 .profile-stat{
   flex:1; text-align:center; padding:14px 10px; border-radius:var(--radius-sm);
   background:linear-gradient(120deg, rgba(11,61,145,.06), rgba(212,175,55,.09));

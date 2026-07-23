@@ -854,21 +854,29 @@ document.addEventListener('DOMContentLoaded', () => {
   const nav = document.getElementById('site-nav');
   const navToggle = document.getElementById('nav-toggle');
   const navLinks = document.getElementById('nav-links');
+  const navLinksOverlay = document.getElementById('nav-links-overlay');
 
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 40);
   });
 
+  function closeNavLinks(){
+    navToggle?.classList.remove('open');
+    navLinks?.classList.remove('open');
+    navLinksOverlay?.classList.remove('open');
+    navToggle?.setAttribute('aria-expanded', 'false');
+  }
+
   navToggle?.addEventListener('click', () => {
-    navToggle.classList.toggle('open');
-    navLinks.classList.toggle('open');
+    const isOpen = navToggle.classList.toggle('open');
+    navLinks?.classList.toggle('open', isOpen);
+    navLinksOverlay?.classList.toggle('open', isOpen);
+    navToggle.setAttribute('aria-expanded', String(isOpen));
   });
+  navLinksOverlay?.addEventListener('click', closeNavLinks);
 
   navLinks?.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      navToggle.classList.remove('open');
-      navLinks.classList.remove('open');
-    });
+    link.addEventListener('click', closeNavLinks);
   });
 
   /* ---------- 3) الظهور عند التمرير ---------- */
@@ -2050,6 +2058,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ---------- 9) الأزرار العائمة ---------- */
+  const fabMenuToggle = document.getElementById('fab-menu-toggle');
+  fabMenuToggle?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = document.body.classList.toggle('fabs-open');
+    fabMenuToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+  document.addEventListener('click', (e) => {
+    if (!document.body.classList.contains('fabs-open')) return;
+    const leftGroup = document.getElementById('fab-group-left');
+    const rightGroup = document.getElementById('fab-group-right');
+    const insideFabs = (leftGroup && leftGroup.contains(e.target)) || (rightGroup && rightGroup.contains(e.target)) || e.target === fabMenuToggle || fabMenuToggle?.contains(e.target);
+    if (!insideFabs) {
+      document.body.classList.remove('fabs-open');
+      fabMenuToggle?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
   const toTop = document.getElementById('to-top');
   window.addEventListener('scroll', () => {
     toTop?.classList.toggle('show', window.scrollY > 700);
@@ -2236,9 +2261,17 @@ document.addEventListener('DOMContentLoaded', () => {
     [puzzleOrder[puzzleSelected], puzzleOrder[pos]] = [puzzleOrder[pos], puzzleOrder[puzzleSelected]];
     puzzleSelected = null;
     renderPuzzle();
-    if (puzzleOrder.every((v, i) => v === i) && puzzleStatus) {
-      onPuzzleSolved();
+  }
+  function onPuzzleCheckClick(){
+    if (puzzleAlreadyDone) return; // خلاص اتسجل الإنجاز قبل كده
+    const solved = puzzleOrder.every((v, i) => v === i);
+    if (!solved) {
+      if (puzzleStatus) {
+        puzzleStatus.innerHTML = `<p>❌ لسه القطعة مش مظبوطة، كمّل رمّم وجرّب تاني</p>`;
+      }
+      return;
     }
+    onPuzzleSolved();
   }
   function onPuzzleSolved(){
     if (puzzleAlreadyDone) return;
@@ -2293,6 +2326,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.style.overflow = '';
   });
   document.getElementById('puzzle-shuffle-btn')?.addEventListener('click', shufflePuzzle);
+  document.getElementById('puzzle-check-btn')?.addEventListener('click', onPuzzleCheckClick);
   document.getElementById('item-puzzle-btn')?.addEventListener('click', () => {
     const ctx = window.__currentItemForPuzzle;
     if (ctx) { closeModal(itemModal); openPuzzle(ctx.item, ctx.wingKey); }

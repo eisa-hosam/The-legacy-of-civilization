@@ -124,6 +124,10 @@
   </div>
 
   <div class="nav-auth" id="nav-auth">
+    <button class="nav-messages-btn" id="nav-messages-btn" title="الرسائل" style="display:none;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="nav-messages-badge" id="nav-messages-badge" style="display:none;"></span>
+    </button>
     <button class="nav-admin-btn" id="nav-admin-btn" title="لوحة تحكم الأدمن" style="display:none;">
       <svg width="18" height="18" viewBox="0 0 64 64"><use href="#hg-eye"></use></svg>
     </button>
@@ -138,20 +142,28 @@
     </button>
   </div>
 
-  <button class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
+  <button class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة" aria-expanded="false">
     <span></span><span></span><span></span>
   </button>
 </nav>
+<div class="nav-links-overlay" id="nav-links-overlay"></div>
 
 <!-- =====================================================================
      3) قسم البطل (Hero)
      ===================================================================== -->
 <header class="pharaoh-hero" id="top">
-  <div class="hero-glow"></div>
   <div class="hero-pyramids"></div>
   <div id="hero-glyphs"></div>
 
   <div class="hero-content">
+    <div class="logo-orbit logo-orbit-lg hero-logo">
+      <span class="logo-orbit-ring"></span>
+      <span class="logo-orbit-ring logo-orbit-ring2"></span>
+      <span class="logo-orbit-dot d1"></span>
+      <span class="logo-orbit-dot d2"></span>
+      <span class="logo-orbit-dot d3"></span>
+      <img src="logo.png" alt="متحف إرث الحضارة" class="hero-logo-img">
+    </div>
     <span class="hero-eyebrow">
       <svg viewBox="0 0 64 64"><use href="#hg-eye"></use></svg>
       <span data-i18n="hero.eyebrow">رحلة عبر آلاف السنين</span>
@@ -661,7 +673,49 @@
   </div>
   <div class="container">
     <div class="puzzle-board" id="puzzle-board"></div>
+    <button type="button" class="btn btn-gold" id="puzzle-check-btn" style="margin:18px auto 0;display:flex;">✅ هل انتهيت من الترميم؟</button>
     <div class="puzzle-status" id="puzzle-status"></div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     الرسائل (تواصل بين زوار المتحف المسجّلين)
+     ===================================================================== -->
+<div class="gallery-overlay" id="messages-view">
+  <div class="gallery-head">
+    <button class="gallery-back" id="messages-back-btn">
+      <svg width="18" height="18" viewBox="0 0 64 64"><use href="#hg-arm"></use></svg>
+      العودة
+    </button>
+    <div class="gallery-head-info">
+      <span class="gallery-icon">💬</span>
+      <div>
+        <h2>الرسائل</h2>
+        <p>تواصل مع زوار المتحف التانيين</p>
+      </div>
+    </div>
+  </div>
+  <div class="container messages-container">
+    <div class="messages-list-pane" id="messages-list-pane">
+      <div class="messages-newchat">
+        <input type="text" id="messages-search-input" placeholder="دوّر باسم مستخدم عشان تبدأ محادثة جديدة..." autocomplete="off">
+        <div class="messages-search-results" id="messages-search-results"></div>
+      </div>
+      <div class="messages-convo-list" id="messages-convo-list">
+        <p class="messages-empty-hint">مفيش محادثات لسه.. دوّر باسم مستخدم فوق وابدأ أول محادثة 👋</p>
+      </div>
+    </div>
+    <div class="messages-thread-pane" id="messages-thread-pane">
+      <div class="messages-thread-empty" id="messages-thread-empty">اختر محادثة من القايمة أو ابدأ وحدة جديدة</div>
+      <div class="messages-thread-active" id="messages-thread-active" style="display:none;">
+        <div class="messages-thread-head" id="messages-thread-head"></div>
+        <div class="messages-thread-body" id="messages-thread-body"></div>
+        <form class="messages-thread-form" id="messages-thread-form">
+          <input type="text" id="messages-thread-input" placeholder="اكتب رسالتك..." autocomplete="off">
+          <button type="submit" class="btn btn-gold btn-sm">إرسال</button>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -669,49 +723,70 @@
      نافذة تسجيل الدخول / إنشاء حساب زائر
      ===================================================================== -->
 <div class="modal-overlay" id="login-modal">
-  <div class="modal-box login-modal-box">
+  <div class="modal-box login-modal-box futuristic-login">
     <button class="modal-close">✕</button>
-    <span class="modal-tag">أهلًا بك في المتحف</span>
 
-    <button type="button" class="btn btn-google" id="google-signin-btn" style="width:100%;justify-content:center;">
-      <svg width="18" height="18" viewBox="0 0 48 48">
-        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
-        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4c-7.6 0-14.1 4.3-17.4 10.7z"/>
-        <path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6c-2 1.5-4.6 2.4-7.7 2.4-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.8 39.6 16.3 44 24 44z"/>
-        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.4l6.6 5.6C41.8 36 44 30.5 44 24c0-1.3-.1-2.7-.4-3.5z"/>
-      </svg>
-      <span>الدخول بحساب Google</span>
-    </button>
-    <div class="auth-divider"><span>أو</span></div>
-
-    <div class="auth-tabs">
-      <button type="button" class="auth-tab active" data-auth-tab="register">حساب جديد</button>
-      <button type="button" class="auth-tab" data-auth-tab="login">عندي حساب بالفعل</button>
+    <div class="futuristic-login-head">
+      <div class="logo-orbit logo-orbit-lg">
+        <span class="logo-orbit-ring"></span>
+        <span class="logo-orbit-ring logo-orbit-ring2"></span>
+        <span class="logo-orbit-dot d1"></span>
+        <span class="logo-orbit-dot d2"></span>
+        <span class="logo-orbit-dot d3"></span>
+        <img src="logo.png" alt="متحف إرث الحضارة">
+      </div>
+      <h3 class="futuristic-login-title">تسجيل الدخول</h3>
+      <span class="modal-tag">أهلًا بك في المتحف</span>
     </div>
 
-    <form id="register-form" class="auth-form active" data-auth-form="register">
-      <p>سجّل بياناتك عشان نجهزلك صفحة شخصية، وسجلّ للقطع اللي بتستكشفها، واختبار شخصيتك التاريخية.</p>
-      <input type="text" id="register-username" placeholder="اسمك" maxlength="40" autocomplete="name" required>
-      <input type="email" id="register-email" placeholder="بريدك الإلكتروني" autocomplete="email" required>
-      <input type="password" id="register-password" placeholder="كلمة السر (6 حروف على الأقل)" autocomplete="new-password" minlength="6" required>
-      <div class="form-note login-error" id="register-error"></div>
-      <button type="submit" class="btn btn-gold" id="register-submit-btn" style="justify-content:center;">
-        <span class="btn-label">إنشاء الحساب</span>
+    <div class="auth-recommended">
+      <button type="button" class="btn btn-google btn-google-lg" id="google-signin-btn" style="width:100%;justify-content:center;">
+        <svg width="20" height="20" viewBox="0 0 48 48">
+          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
+          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4c-7.6 0-14.1 4.3-17.4 10.7z"/>
+          <path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6c-2 1.5-4.6 2.4-7.7 2.4-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.8 39.6 16.3 44 24 44z"/>
+          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.4l6.6 5.6C41.8 36 44 30.5 44 24c0-1.3-.1-2.7-.4-3.5z"/>
+        </svg>
+        <span>المتابعة بحساب Google</span>
       </button>
-    </form>
+      <span class="auth-recommended-badge">✓ الطريقة الأسرع والأكثر أمانًا — بدون كلمة سر جديدة</span>
+    </div>
 
-    <form id="login-form" class="auth-form" data-auth-form="login">
-      <p>سجّل دخولك ببريدك الإلكتروني وكلمة السر.</p>
-      <input type="email" id="login-email" placeholder="بريدك الإلكتروني" autocomplete="email" required>
-      <input type="password" id="login-password" placeholder="كلمة السر" autocomplete="current-password" required>
-      <div class="form-note login-error" id="login-error"></div>
-      <button type="submit" class="btn btn-gold" id="login-submit-btn" style="justify-content:center;">
-        <span class="btn-label">دخول</span>
-      </button>
-      <button type="button" class="auth-forgot" id="forgot-password-btn">نسيت كلمة السر؟</button>
-    </form>
+    <button type="button" class="auth-alt-toggle" id="auth-alt-toggle">
+      <span>مفيش حساب Google متاح؟ سجّل بإيميلك وكلمة سر خاصة بالموقع</span>
+      <span class="auth-alt-toggle-arrow">˅</span>
+    </button>
 
-    <div class="modal-fact" id="login-modal-fact">التسجيل بسيط: إيميلك وكلمة سر بس، من غير أي رسايل تفعيل.</div>
+    <div class="auth-alt-panel" id="auth-alt-panel">
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-auth-tab="login">عندي حساب بالفعل</button>
+        <button type="button" class="auth-tab" data-auth-tab="register">حساب جديد</button>
+      </div>
+
+      <form id="login-form" class="auth-form active" data-auth-form="login">
+        <p>سجّل دخولك ببريدك الإلكتروني وكلمة السر الخاصة بحسابك في المتحف.</p>
+        <input type="email" id="login-email" placeholder="بريدك الإلكتروني" autocomplete="email" required>
+        <input type="password" id="login-password" placeholder="كلمة السر" autocomplete="current-password" required>
+        <div class="form-note login-error" id="login-error"></div>
+        <button type="submit" class="btn btn-gold" id="login-submit-btn" style="justify-content:center;">
+          <span class="btn-label">دخول</span>
+        </button>
+        <button type="button" class="auth-forgot" id="forgot-password-btn">نسيت كلمة السر؟</button>
+      </form>
+
+      <form id="register-form" class="auth-form" data-auth-form="register">
+        <p>سجّل بياناتك عشان نجهزلك صفحة شخصية، وسجلّ للقطع اللي بتستكشفها، واختبار شخصيتك التاريخية. هنبعتلك رابط تفعيل على بريدك للتأكد إنه بريد حقيقي.</p>
+        <input type="text" id="register-username" placeholder="اسمك" maxlength="40" autocomplete="name" required>
+        <input type="email" id="register-email" placeholder="بريدك الإلكتروني" autocomplete="email" required>
+        <input type="password" id="register-password" placeholder="اختر كلمة سر خاصة بالموقع (6 حروف على الأقل)" autocomplete="new-password" minlength="6" required>
+        <div class="form-note login-error" id="register-error"></div>
+        <button type="submit" class="btn btn-gold" id="register-submit-btn" style="justify-content:center;">
+          <span class="btn-label">إنشاء الحساب</span>
+        </button>
+      </form>
+
+      <div class="modal-fact" id="login-modal-fact">ملحوظة أمان: كلمة السر دي بتخص حسابك في المتحف فقط، ومنعًا لأي لبس إحنا لا نطلب ولا نخزّن كلمة سر بريدك الإلكتروني (جيميل) أبدًا. لو نسيتها استخدم "نسيت كلمة السر" أو ادخل بحساب Google.</div>
+    </div>
   </div>
 </div>
 
@@ -769,6 +844,10 @@
     <div class="profile-stats-row">
       <div class="profile-stat"><strong id="profile-visits">0</strong><span>زيارة للموقع</span></div>
       <div class="profile-stat"><strong id="profile-history-count">0</strong><span>قطعة شاهدتها</span></div>
+    </div>
+    <div class="profile-verify-banner" id="profile-verify-banner" style="display:none;">
+      <span>📩 بريدك لسه مش مفعّل. فعّله عشان نتأكد إن حسابك بأمان.</span>
+      <button type="button" class="btn btn-line" id="profile-resend-verify-btn">إعادة إرسال رابط التفعيل</button>
     </div>
     <div class="profile-personality" id="profile-personality" style="display:none;">
       <h4 class="profile-section-title">شخصيتك التاريخية</h4>
@@ -841,13 +920,17 @@
 <!-- =====================================================================
      10) الأزرار العائمة
      ===================================================================== -->
-<div class="fab-group">
+<button type="button" class="fab fab-menu-toggle" id="fab-menu-toggle" aria-label="فتح قائمة الاختصارات" aria-expanded="false" title="الاختصارات">
+  <span class="fab-menu-icon"><span></span><span></span><span></span></span>
+</button>
+
+<div class="fab-group" id="fab-group-left">
   <button class="fab theme-toggle-btn" id="theme-toggle-btn" aria-label="تبديل الوضع الفاتح/الغامق" title="الوضع الفاتح/الغامق">☀️</button>
   <button class="fab" id="surprise-btn" aria-label="فاجئني بقطعة عشوائية" title="فاجئني">🎲</button>
   <button class="fab" id="to-top" aria-label="العودة للأعلى">↑</button>
 </div>
 
-<div class="fab-group fab-group-right">
+<div class="fab-group fab-group-right" id="fab-group-right">
   <button class="fab" id="a11y-btn" aria-label="إمكانية الوصول" title="إمكانية الوصول">♿</button>
   <button class="fab" id="suggestion-box-btn" data-open-modal="suggestion-modal" aria-label="صندوق الاقتراحات" title="عندك اقتراح؟">💡</button>
 </div>
