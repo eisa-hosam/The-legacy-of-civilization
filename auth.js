@@ -656,6 +656,37 @@ async function markConversationRead(convoId) {
   } catch (e) { /* مش مشكلة لو فشلت */ }
 }
 
+/* إشعارات المتصفح لما تجيلك رسالة جديدة والصفحة مش فاتحة على نفس المحادثة
+   (أو التاب مش الأساسي دلوقتي). ده إشعار "فورجراوند" بيشتغل والموقع مفتوح؛
+   عشان يوصل حتى لو التطبيق مقفول محتاج ربط Firebase Cloud Messaging + سيرفر
+   يبعت الإشعار، وده خارج نطاق كود الواجهة ده (شرحناه في الملاحظات تحت). */
+async function requestMessagesNotificationPermission() {
+  try {
+    if (!("Notification" in window)) return "unsupported";
+    if (Notification.permission === "granted" || Notification.permission === "denied") {
+      return Notification.permission;
+    }
+    return await Notification.requestPermission();
+  } catch (e) { return "unsupported"; }
+}
+
+function showMessageNotification(senderName, text) {
+  try {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    const n = new Notification(`رسالة جديدة من ${senderName || "زائر"}`, {
+      body: String(text || "").slice(0, 120),
+      icon: "./logo.png",
+      badge: "./logo.png",
+      tag: "museum-message" /* يجمع الإشعارات المتلاحقة في واحد بدل ما تتكدس */
+    });
+    n.onclick = () => {
+      window.focus();
+      document.getElementById("nav-messages-btn")?.click();
+      n.close();
+    };
+  } catch (e) { /* مش مشكلة لو المتصفح رفض */ }
+}
+
 window.MuseumMessages = {
   searchUsersByUsername,
   getOrCreateConversation,
@@ -663,6 +694,8 @@ window.MuseumMessages = {
   subscribeConversations,
   subscribeMessages,
   markConversationRead,
+  requestMessagesNotificationPermission,
+  showMessageNotification,
   currentUid: () => (currentUser ? currentUser.uid : null),
   currentUsername: () => (currentUser ? currentUser.username : "")
 };
@@ -1163,19 +1196,44 @@ function updateAuthUI() {
 }
 
 let __messagesBadgeUnsub = null;
+let __msgWatcherFirstRun = true;
+let __lastMessageAtByConvo = {}; /* convoId -> آخر توقيت رسالة شفناه (millis)، عشان نعرف إيه اللي جديد فعلاً */
 function startMessagesBadgeWatcher() {
   if (__messagesBadgeUnsub) return; // شغال بالفعل
+  __msgWatcherFirstRun = true;
+  __lastMessageAtByConvo = {};
   __messagesBadgeUnsub = subscribeConversations((list) => {
     const badge = document.getElementById("nav-messages-badge");
-    if (!badge || !currentUser) return;
+    if (!currentUser) return;
     const unreadCount = list.filter((c) => Array.isArray(c.unreadFor) && c.unreadFor.includes(currentUser.uid)).length;
-    if (unreadCount > 0) { badge.textContent = String(unreadCount); badge.style.display = "flex"; }
-    else { badge.style.display = "none"; }
+    if (badge) {
+      if (unreadCount > 0) { badge.textContent = String(unreadCount); badge.style.display = "flex"; }
+      else { badge.style.display = "none"; }
+    }
+
+    /* أول تحميل بس بنسجل التوقيتات من غير ما نبعت إشعارات (عشان منزعجش
+       الزائر برسائل قديمة كل ما يفتح الموقع)؛ اللي بعد كده بيبقى فعلاً جديد */
+    list.forEach((c) => {
+      const ts = c.lastMessageAt && c.lastMessageAt.toMillis ? c.lastMessageAt.toMillis() : 0;
+      const prevTs = __lastMessageAtByConvo[c.id] || 0;
+      const isNewIncoming = !__msgWatcherFirstRun && ts > prevTs && c.lastSenderUid && c.lastSenderUid !== currentUser.uid;
+      const isViewingThisConvo = window.__activeMessagesConvoId === c.id && document.visibilityState === "visible"
+        && document.getElementById("messages-view")?.classList.contains("active");
+      if (isNewIncoming && !isViewingThisConvo) {
+        const otherName = (c.participantNames && c.participantNames[c.lastSenderUid]) || "زائر";
+        showMessageNotification(otherName, c.lastMessage || "");
+      }
+      __lastMessageAtByConvo[c.id] = ts;
+    });
+    __msgWatcherFirstRun = false;
+
     document.dispatchEvent(new CustomEvent("messages-list-updated", { detail: { list } }));
   });
 }
 function stopMessagesBadgeWatcher() {
   if (__messagesBadgeUnsub) { __messagesBadgeUnsub(); __messagesBadgeUnsub = null; }
+  __msgWatcherFirstRun = true;
+  __lastMessageAtByConvo = {};
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1447,6 +1505,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!convoId) return;
     activeConvoId = convoId;
     activeOtherName = otherName || "زائر";
+    window.__activeMessagesConvoId = convoId;
     if (__msgUnsub) __msgUnsub();
     if (threadEmpty) threadEmpty.style.display = "none";
     if (threadActive) threadActive.style.display = "flex";
@@ -1464,6 +1523,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     messagesView.classList.add("active");
     document.body.style.overflow = "hidden";
+    /* بنسأل عن إذن الإشعارات هنا (أول ما الزائر يهتم بالرسائل فعلاً)، مش
+       من أول ما يفتح الموقع، عشان معدل الموافقة يبقى أعلى */
+    window.MuseumMessages.requestMessagesNotificationPermission();
   });
 
   backBtn?.addEventListener("click", () => {
@@ -1473,6 +1535,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     messagesView.classList.remove("active");
     document.body.style.overflow = "";
+    window.__activeMessagesConvoId = null;
     if (__msgUnsub) { __msgUnsub(); __msgUnsub = null; }
   });
 
@@ -1517,6 +1580,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const text = threadInput.value;
     if (!text.trim() || !activeConvoId) return;
     threadInput.value = "";
-    await window.MuseumMessages.sendDirectMessage(activeConvoId, text);
+    const ok = await window.MuseumMessages.sendDirectMessage(activeConvoId, text);
+    if (!ok) {
+      showToast("الرسالة معلقتش، تأكد من اتصالك بالإنترنت وجرّب تاني 🌐", true);
+      threadInput.value = text; /* نرجّع النص اللي كتبه عشان مايضيعش */
+    }
   });
 });
