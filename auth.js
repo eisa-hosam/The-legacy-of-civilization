@@ -550,156 +550,6 @@ window.MuseumAuth = {
   downloadRestorationCertificate: (itemTitle) => downloadRestorationCertificate(currentUser ? currentUser.username : "زائر", itemTitle)
 };
 
-/* ---------- 6ب) الرسائل: تواصل بين زوار المتحف المسجّلين ---------- */
-const CONVERSATIONS_COLLECTION = "museum_conversations";
-
-function conversationIdFor(uidA, uidB) {
-  return [uidA, uidB].sort().join("_");
-}
-
-/* بحث بادئة على اسم المستخدم (Firestore مبيدعمش بحث "يحتوي على" حقيقي،
-   فبنستخدم حيلة range بين النص والنص + أعلى حرف يوني كود عشان نجيب كل اسم
-   بيبدأ بنفس الحروف). البحث حساس لحالة الأحرف. */
-async function searchUsersByUsername(prefix) {
-  const clean = String(prefix || "").trim();
-  if (clean.length < 2 || !currentUser) return [];
-  try {
-    const snap = await db.collection(USERS_COLLECTION)
-      .orderBy("username")
-      .startAt(clean)
-      .endAt(clean + "\uf8ff")
-      .limit(8)
-      .get();
-    return snap.docs
-      .map((d) => ({ uid: d.id, username: d.data().username || "بدون اسم" }))
-      .filter((u) => u.uid !== currentUser.uid);
-  } catch (e) {
-    console.warn("تعذّر البحث عن مستخدمين:", e);
-    return [];
-  }
-}
-
-async function getOrCreateConversation(otherUid, otherUsername) {
-  if (!currentUser || !otherUid) return null;
-  const convoId = conversationIdFor(currentUser.uid, otherUid);
-  const ref = db.collection(CONVERSATIONS_COLLECTION).doc(convoId);
-  const snap = await ref.get();
-  if (!snap.exists) {
-    await ref.set({
-      participants: [currentUser.uid, otherUid],
-      participantNames: {
-        [currentUser.uid]: currentUser.username,
-        [otherUid]: otherUsername || "زائر"
-      },
-      lastMessage: "",
-      lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
-      lastSenderUid: null,
-      unreadFor: []
-    });
-  }
-  return convoId;
-}
-
-async function sendDirectMessage(convoId, text) {
-  const clean = String(text || "").trim();
-  if (!currentUser || !convoId || !clean) return false;
-  try {
-    const ref = db.collection(CONVERSATIONS_COLLECTION).doc(convoId);
-    await ref.collection("messages").add({
-      senderUid: currentUser.uid,
-      senderName: currentUser.username,
-      text: clean.slice(0, 1000),
-      sentAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    const snap = await ref.get();
-    const data = snap.data() || {};
-    const otherUid = (data.participants || []).find((u) => u !== currentUser.uid);
-    await ref.update({
-      lastMessage: clean.slice(0, 120),
-      lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
-      lastSenderUid: currentUser.uid,
-      unreadFor: otherUid ? firebase.firestore.FieldValue.arrayUnion(otherUid) : []
-    });
-    return true;
-  } catch (e) {
-    console.warn("تعذّر إرسال الرسالة:", e);
-    return false;
-  }
-}
-
-function subscribeConversations(callback) {
-  if (!currentUser) return () => {};
-  return db.collection(CONVERSATIONS_COLLECTION)
-    .where("participants", "array-contains", currentUser.uid)
-    .orderBy("lastMessageAt", "desc")
-    .onSnapshot((snap) => {
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      callback(list);
-    }, (err) => console.warn("تعذّر تحميل المحادثات:", err));
-}
-
-function subscribeMessages(convoId, callback) {
-  return db.collection(CONVERSATIONS_COLLECTION).doc(convoId).collection("messages")
-    .orderBy("sentAt", "asc")
-    .onSnapshot((snap) => {
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      callback(list);
-    }, (err) => console.warn("تعذّر تحميل الرسائل:", err));
-}
-
-async function markConversationRead(convoId) {
-  if (!currentUser || !convoId) return;
-  try {
-    await db.collection(CONVERSATIONS_COLLECTION).doc(convoId).update({
-      unreadFor: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
-    });
-  } catch (e) { /* مش مشكلة لو فشلت */ }
-}
-
-/* إشعارات المتصفح لما تجيلك رسالة جديدة والصفحة مش فاتحة على نفس المحادثة
-   (أو التاب مش الأساسي دلوقتي). ده إشعار "فورجراوند" بيشتغل والموقع مفتوح؛
-   عشان يوصل حتى لو التطبيق مقفول محتاج ربط Firebase Cloud Messaging + سيرفر
-   يبعت الإشعار، وده خارج نطاق كود الواجهة ده (شرحناه في الملاحظات تحت). */
-async function requestMessagesNotificationPermission() {
-  try {
-    if (!("Notification" in window)) return "unsupported";
-    if (Notification.permission === "granted" || Notification.permission === "denied") {
-      return Notification.permission;
-    }
-    return await Notification.requestPermission();
-  } catch (e) { return "unsupported"; }
-}
-
-function showMessageNotification(senderName, text) {
-  try {
-    if (!("Notification" in window) || Notification.permission !== "granted") return;
-    const n = new Notification(`رسالة جديدة من ${senderName || "زائر"}`, {
-      body: String(text || "").slice(0, 120),
-      icon: "./logo.png",
-      badge: "./logo.png",
-      tag: "museum-message" /* يجمع الإشعارات المتلاحقة في واحد بدل ما تتكدس */
-    });
-    n.onclick = () => {
-      window.focus();
-      document.getElementById("nav-messages-btn")?.click();
-      n.close();
-    };
-  } catch (e) { /* مش مشكلة لو المتصفح رفض */ }
-}
-
-window.MuseumMessages = {
-  searchUsersByUsername,
-  getOrCreateConversation,
-  sendDirectMessage,
-  subscribeConversations,
-  subscribeMessages,
-  markConversationRead,
-  requestMessagesNotificationPermission,
-  showMessageNotification,
-  currentUid: () => (currentUser ? currentUser.uid : null),
-  currentUsername: () => (currentUser ? currentUser.username : "")
-};
-
 /* ---------- 7) اختبار الشخصية التاريخية ---------- */
 const TRAITS = ["leadership", "wisdom", "ambition", "justice", "creativity"];
 
@@ -1177,7 +1027,6 @@ function updateAuthUI() {
   const loginBtn = document.getElementById("nav-login-btn");
   const userChip = document.getElementById("nav-user-chip");
   const adminBtn = document.getElementById("nav-admin-btn");
-  const messagesBtn = document.getElementById("nav-messages-btn");
   if (!loginBtn || !userChip || !adminBtn) return;
 
   if (currentUser) {
@@ -1186,54 +1035,11 @@ function updateAuthUI() {
     userChip.querySelector("#nav-user-avatar").textContent = initialsOf(currentUser.username);
     userChip.querySelector("#nav-user-name").textContent = currentUser.username;
     adminBtn.style.display = currentUser.isAdmin ? "inline-flex" : "none";
-    if (messagesBtn) { messagesBtn.style.display = "inline-flex"; startMessagesBadgeWatcher(); }
   } else {
     loginBtn.style.display = "inline-flex";
     userChip.style.display = "none";
     adminBtn.style.display = "none";
-    if (messagesBtn) { messagesBtn.style.display = "none"; stopMessagesBadgeWatcher(); }
   }
-}
-
-let __messagesBadgeUnsub = null;
-let __msgWatcherFirstRun = true;
-let __lastMessageAtByConvo = {}; /* convoId -> آخر توقيت رسالة شفناه (millis)، عشان نعرف إيه اللي جديد فعلاً */
-function startMessagesBadgeWatcher() {
-  if (__messagesBadgeUnsub) return; // شغال بالفعل
-  __msgWatcherFirstRun = true;
-  __lastMessageAtByConvo = {};
-  __messagesBadgeUnsub = subscribeConversations((list) => {
-    const badge = document.getElementById("nav-messages-badge");
-    if (!currentUser) return;
-    const unreadCount = list.filter((c) => Array.isArray(c.unreadFor) && c.unreadFor.includes(currentUser.uid)).length;
-    if (badge) {
-      if (unreadCount > 0) { badge.textContent = String(unreadCount); badge.style.display = "flex"; }
-      else { badge.style.display = "none"; }
-    }
-
-    /* أول تحميل بس بنسجل التوقيتات من غير ما نبعت إشعارات (عشان منزعجش
-       الزائر برسائل قديمة كل ما يفتح الموقع)؛ اللي بعد كده بيبقى فعلاً جديد */
-    list.forEach((c) => {
-      const ts = c.lastMessageAt && c.lastMessageAt.toMillis ? c.lastMessageAt.toMillis() : 0;
-      const prevTs = __lastMessageAtByConvo[c.id] || 0;
-      const isNewIncoming = !__msgWatcherFirstRun && ts > prevTs && c.lastSenderUid && c.lastSenderUid !== currentUser.uid;
-      const isViewingThisConvo = window.__activeMessagesConvoId === c.id && document.visibilityState === "visible"
-        && document.getElementById("messages-view")?.classList.contains("active");
-      if (isNewIncoming && !isViewingThisConvo) {
-        const otherName = (c.participantNames && c.participantNames[c.lastSenderUid]) || "زائر";
-        showMessageNotification(otherName, c.lastMessage || "");
-      }
-      __lastMessageAtByConvo[c.id] = ts;
-    });
-    __msgWatcherFirstRun = false;
-
-    document.dispatchEvent(new CustomEvent("messages-list-updated", { detail: { list } }));
-  });
-}
-function stopMessagesBadgeWatcher() {
-  if (__messagesBadgeUnsub) { __messagesBadgeUnsub(); __messagesBadgeUnsub = null; }
-  __msgWatcherFirstRun = true;
-  __lastMessageAtByConvo = {};
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1245,23 +1051,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const registerSubmitBtn = document.getElementById("register-submit-btn");
   const loginSubmitBtn = document.getElementById("login-submit-btn");
 
-  const authAltToggle = document.getElementById("auth-alt-toggle");
-  const authAltPanel = document.getElementById("auth-alt-panel");
-
   document.getElementById("nav-login-btn")?.addEventListener("click", () => {
     if (registerError) registerError.textContent = "";
     if (loginError) loginError.textContent = "";
-    /* كل مرة تتفتح فيها نافذة الدخول، نرجّع الوضع الافتراضي: جوجل ظاهر ومطلوب،
-       وطريقة الإيميل/كلمة السر مقفولة، عشان نفضل نوجّه الزوار لأسرع وأأمن طريقة */
-    authAltPanel?.classList.remove("open");
-    authAltToggle?.classList.remove("open");
     loginModal.classList.add("active");
     document.body.style.overflow = "hidden";
-  });
-
-  authAltToggle?.addEventListener("click", () => {
-    const isOpen = authAltPanel?.classList.toggle("open");
-    authAltToggle.classList.toggle("open", !!isOpen);
   });
 
   /* التبديل بين تبويب "عندي حساب" و"حساب جديد" */
@@ -1438,152 +1232,5 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("quiz-result-modal")?.classList.remove("active");
     document.body.style.overflow = "";
     renderProfilePersonality();
-  });
-});
-/* ---------- 11) ربط واجهة الرسائل (تواصل بين الزوار) ---------- */
-document.addEventListener("DOMContentLoaded", () => {
-  const messagesView = document.getElementById("messages-view");
-  const messagesBtn = document.getElementById("nav-messages-btn");
-  const backBtn = document.getElementById("messages-back-btn");
-  const searchInput = document.getElementById("messages-search-input");
-  const searchResults = document.getElementById("messages-search-results");
-  const convoList = document.getElementById("messages-convo-list");
-  const threadEmpty = document.getElementById("messages-thread-empty");
-  const threadActive = document.getElementById("messages-thread-active");
-  const threadHead = document.getElementById("messages-thread-head");
-  const threadBody = document.getElementById("messages-thread-body");
-  const threadForm = document.getElementById("messages-thread-form");
-  const threadInput = document.getElementById("messages-thread-input");
-  const messagesContainer = document.querySelector(".messages-container");
-  if (!messagesView || !window.MuseumMessages) return;
-
-  let activeConvoId = null;
-  let activeOtherName = "";
-  let __msgUnsub = null;
-  let __latestConvoList = [];
-
-  function renderConvoList(list) {
-    __latestConvoList = list;
-    if (!convoList) return;
-    if (!list.length) {
-      convoList.innerHTML = '<p class="messages-empty-hint">مفيش محادثات لسه.. دوّر باسم مستخدم فوق وابدأ أول محادثة 👋</p>';
-      return;
-    }
-    const myUid = window.MuseumMessages.currentUid();
-    convoList.innerHTML = list.map((c) => {
-      const otherUid = (c.participants || []).find((u) => u !== myUid);
-      const otherName = (c.participantNames && c.participantNames[otherUid]) || "زائر";
-      const unread = Array.isArray(c.unreadFor) && c.unreadFor.includes(myUid);
-      return `
-        <div class="messages-convo-item${c.id === activeConvoId ? " active" : ""}" data-convo-id="${c.id}" data-other-name="${escapeHTML(otherName)}">
-          <span class="messages-convo-avatar">${escapeHTML(initialsOf(otherName))}</span>
-          <span class="messages-convo-info">
-            <span class="messages-convo-name">${escapeHTML(otherName)}${unread ? '<span class="messages-convo-dot"></span>' : ""}</span>
-            <span class="messages-convo-last">${escapeHTML(c.lastMessage || "ابدأ المحادثة..")}</span>
-          </span>
-        </div>
-      `;
-    }).join("");
-    convoList.querySelectorAll(".messages-convo-item").forEach((el) => {
-      el.addEventListener("click", () => openThread(el.dataset.convoId, el.dataset.otherName));
-    });
-  }
-  document.addEventListener("messages-list-updated", (e) => renderConvoList(e.detail.list || []));
-
-  function renderMessages(list) {
-    if (!threadBody) return;
-    const myUid = window.MuseumMessages.currentUid();
-    threadBody.innerHTML = list.map((m) => {
-      const mine = m.senderUid === myUid;
-      const time = m.sentAt && m.sentAt.toDate ? m.sentAt.toDate().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }) : "";
-      return `<div class="messages-bubble${mine ? " mine" : ""}">${escapeHTML(m.text || "")}<time>${time}</time></div>`;
-    }).join("");
-    threadBody.scrollTop = threadBody.scrollHeight;
-  }
-
-  function openThread(convoId, otherName) {
-    if (!convoId) return;
-    activeConvoId = convoId;
-    activeOtherName = otherName || "زائر";
-    window.__activeMessagesConvoId = convoId;
-    if (__msgUnsub) __msgUnsub();
-    if (threadEmpty) threadEmpty.style.display = "none";
-    if (threadActive) threadActive.style.display = "flex";
-    if (threadHead) threadHead.textContent = activeOtherName;
-    messagesContainer?.classList.add("thread-open");
-    renderConvoList(__latestConvoList);
-    window.MuseumMessages.markConversationRead(convoId);
-    __msgUnsub = window.MuseumMessages.subscribeMessages(convoId, renderMessages);
-  }
-
-  messagesBtn?.addEventListener("click", () => {
-    if (!window.MuseumAuth?.isLoggedIn()) {
-      document.getElementById("nav-login-btn")?.click();
-      return;
-    }
-    messagesView.classList.add("active");
-    document.body.style.overflow = "hidden";
-    /* بنسأل عن إذن الإشعارات هنا (أول ما الزائر يهتم بالرسائل فعلاً)، مش
-       من أول ما يفتح الموقع، عشان معدل الموافقة يبقى أعلى */
-    window.MuseumMessages.requestMessagesNotificationPermission();
-  });
-
-  backBtn?.addEventListener("click", () => {
-    if (messagesContainer?.classList.contains("thread-open") && window.matchMedia("(max-width:860px)").matches) {
-      messagesContainer.classList.remove("thread-open");
-      return;
-    }
-    messagesView.classList.remove("active");
-    document.body.style.overflow = "";
-    window.__activeMessagesConvoId = null;
-    if (__msgUnsub) { __msgUnsub(); __msgUnsub = null; }
-  });
-
-  let searchTimer = null;
-  searchInput?.addEventListener("input", () => {
-    clearTimeout(searchTimer);
-    const q = searchInput.value.trim();
-    if (q.length < 2) { searchResults.classList.remove("show"); searchResults.innerHTML = ""; return; }
-    searchTimer = setTimeout(async () => {
-      const users = await window.MuseumMessages.searchUsersByUsername(q);
-      if (!users.length) {
-        searchResults.innerHTML = '<div class="messages-search-empty">مفيش مستخدم بالاسم ده</div>';
-      } else {
-        searchResults.innerHTML = users.map((u) =>
-          `<div class="messages-search-result" data-uid="${u.uid}" data-username="${escapeHTML(u.username)}">
-            <span class="messages-convo-avatar">${escapeHTML(initialsOf(u.username))}</span>
-            <span>${escapeHTML(u.username)}</span>
-          </div>`
-        ).join("");
-        searchResults.querySelectorAll(".messages-search-result").forEach((el) => {
-          el.addEventListener("click", async () => {
-            const otherUid = el.dataset.uid;
-            const otherUsername = el.dataset.username;
-            searchResults.classList.remove("show");
-            searchInput.value = "";
-            const convoId = await window.MuseumMessages.getOrCreateConversation(otherUid, otherUsername);
-            if (convoId) openThread(convoId, otherUsername);
-          });
-        });
-      }
-      searchResults.classList.add("show");
-    }, 350);
-  });
-  document.addEventListener("click", (e) => {
-    if (searchResults && !searchResults.contains(e.target) && e.target !== searchInput) {
-      searchResults.classList.remove("show");
-    }
-  });
-
-  threadForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const text = threadInput.value;
-    if (!text.trim() || !activeConvoId) return;
-    threadInput.value = "";
-    const ok = await window.MuseumMessages.sendDirectMessage(activeConvoId, text);
-    if (!ok) {
-      showToast("الرسالة معلقتش، تأكد من اتصالك بالإنترنت وجرّب تاني 🌐", true);
-      threadInput.value = text; /* نرجّع النص اللي كتبه عشان مايضيعش */
-    }
   });
 });

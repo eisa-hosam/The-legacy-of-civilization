@@ -401,7 +401,13 @@
   function applyLang(lang) {
     const dict = DICT[lang] || DICT.ar;
     document.documentElement.setAttribute('lang', lang);
-    document.documentElement.setAttribute('dir', dict.dir || 'ltr');
+    /* ملحوظة مهمة: الشكل العام للموقع (الأزرار، القوائم، الكروت، النوافذ...إلخ)
+       مصمم ومُختبَر لاتجاه RTL بس. تبديل الاتجاه فعليًا لـ LTR وقت اختيار
+       لغة زي الإنجليزي كان بيكسر عناصر كتير (قائمة النافيجيشن، القوائم
+       المنسدلة، النوافذ المنبثقة...) لأنها معملتلهاش أي تجهيز لاتجاه معاكس.
+       عشان كده بنسيب اتجاه الصفحة RTL ثابت دايمًا مهما كانت اللغة المختارة
+       أو لغة الجهاز/المتصفح، وبنكتفي بترجمة الكلام بس - الشكل نفسه ميتأثرش أبدًا. */
+    document.documentElement.setAttribute('dir', 'rtl');
 
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       const key = el.getAttribute('data-i18n');
@@ -581,10 +587,94 @@
     if (toSync.length) runQueue(toSync, lang, generation);
   }
 
+  /* ---- ترجمة الصفات (placeholder / title / aria-label / alt) ----
+     القاموس الثابت فوق بيترجم بس العناصر اللي متعلّم عليها data-i18n-placeholder/
+     title/aria (النافيجيشن غالبًا). باقي حقول الموقع (تسجيل الدخول، البحث جوّه
+     الجناح، لوحة الأدمن، صندوق الاقتراحات...إلخ) صفاتها مكتوبة عربي مباشرة من
+     غير أي هوك، فبتفضل عربي حتى لما تبدّل اللغة. هنا بنلقطها ونترجمها لحظيًا
+     بنفس خدمة الترجمة والكاش اللي بيترجم بيهم النصوص فوق. */
+  const ATTR_LIST = ['placeholder', 'title', 'aria-label', 'alt'];
+  const trackedAttrEls = new Set();
+
+  function isAttrDictHooked(el, attr) {
+    if (attr === 'placeholder' && el.hasAttribute('data-i18n-placeholder')) return true;
+    if (attr === 'title' && el.hasAttribute('data-i18n-title')) return true;
+    if (attr === 'aria-label' && el.hasAttribute('data-i18n-aria')) return true;
+    return false;
+  }
+
+  function collectArabicAttrEls(root) {
+    const found = [];
+    const els = root.querySelectorAll('[placeholder],[title],[aria-label],[alt]');
+    els.forEach((el) => {
+      if (trackedAttrEls.has(el)) return;
+      if (el.closest('.no-translate,script,style,noscript')) return;
+      let hasArabicAttr = false;
+      ATTR_LIST.forEach((attr) => {
+        if (isAttrDictHooked(el, attr)) return;
+        const val = el.getAttribute(attr);
+        if (val && ARABIC_RE.test(val)) hasArabicAttr = true;
+      });
+      if (hasArabicAttr) found.push(el);
+    });
+    return found;
+  }
+
+  async function syncAttrEl(el, lang, generation) {
+    if (!el.__mtAttrOrig) {
+      el.__mtAttrOrig = {};
+      ATTR_LIST.forEach((attr) => {
+        if (isAttrDictHooked(el, attr)) return;
+        const val = el.getAttribute(attr);
+        if (val && ARABIC_RE.test(val)) el.__mtAttrOrig[attr] = val;
+      });
+    }
+    const attrs = Object.keys(el.__mtAttrOrig);
+    if (!attrs.length) { el.__mtAttrLang = lang; return; }
+
+    await Promise.all(attrs.map(async (attr) => {
+      const original = el.__mtAttrOrig[attr];
+      if (lang === 'ar') { el.setAttribute(attr, original); return; }
+      const translated = await fetchTranslation(original, lang);
+      if (generation !== translateGeneration) return;
+      if (translated) el.setAttribute(attr, translated);
+    }));
+    el.__mtAttrLang = lang;
+  }
+
+  async function runAttrQueue(els, lang, generation) {
+    const CONCURRENCY = 4;
+    let idx = 0;
+    async function worker() {
+      while (idx < els.length) {
+        const el = els[idx++];
+        if (generation !== translateGeneration) return;
+        await syncAttrEl(el, lang, generation);
+      }
+    }
+    const workers = [];
+    for (let i = 0; i < Math.min(CONCURRENCY, els.length); i++) workers.push(worker());
+    await Promise.all(workers);
+  }
+
+  function applyDynamicAttrTranslation(lang, generation) {
+    const fresh = collectArabicAttrEls(document.body);
+    fresh.forEach((el) => trackedAttrEls.add(el));
+
+    const toSync = [];
+    trackedAttrEls.forEach((el) => {
+      if (!el.isConnected) { trackedAttrEls.delete(el); return; }
+      if (el.__mtAttrLang !== lang) toSync.push(el);
+    });
+    if (toSync.length) runAttrQueue(toSync, lang, generation);
+  }
+
   function scheduleTranslatePass() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-      applyDynamicTranslation(window.MUSEUM_LANG || 'ar');
+      const lang = window.MUSEUM_LANG || 'ar';
+      applyDynamicTranslation(lang); // بيزوّد translateGeneration جوّاها لوحدها
+      applyDynamicAttrTranslation(lang, translateGeneration);
     }, 220);
   }
 

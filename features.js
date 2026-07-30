@@ -10,6 +10,8 @@
    6) خريطة المواقع الحقيقية (إحداثيات فعلية تقريبية)
    7) البحث الصوتي
    8) تفعيل الإشعارات (يحتاج إعداد Firebase Cloud Messaging من طرفك)
+   9) صندوق الاقتراحات
+   10) الواقع المعزز (AR): معاينة القطعة أمامك بالكاميرا بحجمها الحقيقي تقريبًا
    ===================================================================== */
 
 (function () {
@@ -77,6 +79,7 @@
     initVoiceSearch();
     initPushButton();
     initSuggestionBox();
+    initAR();
   });
 
   /* ---------- 4) في مثل هذا اليوم ---------- */
@@ -679,6 +682,152 @@
       form.reset();
       setTimeout(() => successEl.classList.remove('show'), 4000);
     });
+  }
+
+  /* ---------- 10) الواقع المعزز (AR): معاينة القطعة أمامك بالكاميرا ----------
+     فكرتها: نفتح كاميرا الموبايل الخلفية كخلفية كاملة للشاشة، ونحط فوقها
+     صورة القطعة الأثرية عشان الزائر يحس إنه شايفها قدامه في المكان الحقيقي.
+     مفيش قياس عمق فعلي (مش WebXR)، فبنسيب للزائر إنه يسحب الصورة بإصبع
+     لتحريكها، ويستخدم إصبعين (Pinch) لتكبيرها/تصغيرها لحد ما تقترب من
+     حجمها الحقيقي حسب المسافة من الأرض. ---------- */
+  function initAR() {
+    const arBtn = document.getElementById('item-modal-ar-btn');
+    const overlay = document.getElementById('ar-overlay');
+    const video = document.getElementById('ar-video');
+    const objImg = document.getElementById('ar-object');
+    const closeBtn = document.getElementById('ar-close-btn');
+    const resetBtn = document.getElementById('ar-reset-btn');
+    const titleLabel = document.getElementById('ar-title-label');
+    const hintEl = document.getElementById('ar-hint');
+    const errorEl = document.getElementById('ar-error');
+    if (!arBtn || !overlay || !video || !objImg) return;
+
+    let stream = null;
+    let scale = 1, posX = 0, posY = 0;
+    let startScale = 1, pinchStartDist = 0;
+    let dragPointerId = null, dragStartX = 0, dragStartY = 0, dragStartPosX = 0, dragStartPosY = 0;
+    const activePointers = new Map();
+
+    function applyTransform() {
+      objImg.style.transform = `translate(-50%,-50%) translate(${posX}px, ${posY}px) scale(${scale})`;
+    }
+
+    function resetTransform() {
+      scale = 1; posX = 0; posY = 0;
+      applyTransform();
+    }
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.classList.add('show');
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+      }
+      video.srcObject = null;
+    }
+
+    async function openAR() {
+      const ctx = window.__currentItemForPuzzle;
+      const itemModalImg = document.getElementById('item-modal-img');
+      if (!ctx || !ctx.item || !itemModalImg) return;
+
+      objImg.src = itemModalImg.src;
+      objImg.alt = ctx.item.t || '';
+      titleLabel.textContent = ctx.item.t || '';
+      resetTransform();
+      errorEl.classList.remove('show');
+      errorEl.textContent = '';
+      hintEl.style.display = '';
+
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showError('متصفحك لا يدعم فتح الكاميرا للواقع المعزز 😔\nجرّب فتح الموقع من متصفح حديث على الموبايل.');
+        return;
+      }
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false
+        });
+        video.srcObject = stream;
+      } catch (err) {
+        showError('تعذّر الوصول إلى الكاميرا 📷\nتأكد من السماح باستخدام الكاميرا لهذا الموقع من إعدادات المتصفح.');
+      }
+    }
+
+    function closeAR() {
+      stopCamera();
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      activePointers.clear();
+      dragPointerId = null;
+    }
+
+    function distanceBetween(p1, p2) {
+      return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+    }
+
+    objImg.addEventListener('pointerdown', (e) => {
+      objImg.setPointerCapture(e.pointerId);
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (activePointers.size === 1) {
+        dragPointerId = e.pointerId;
+        dragStartX = e.clientX; dragStartY = e.clientY;
+        dragStartPosX = posX; dragStartPosY = posY;
+      } else if (activePointers.size === 2) {
+        dragPointerId = null;
+        const pts = Array.from(activePointers.values());
+        pinchStartDist = distanceBetween(pts[0], pts[1]) || 1;
+        startScale = scale;
+      }
+    });
+
+    objImg.addEventListener('pointermove', (e) => {
+      if (!activePointers.has(e.pointerId)) return;
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (activePointers.size === 2) {
+        const pts = Array.from(activePointers.values());
+        const dist = distanceBetween(pts[0], pts[1]) || 1;
+        scale = Math.min(6, Math.max(.15, startScale * (dist / pinchStartDist)));
+        applyTransform();
+      } else if (activePointers.size === 1 && e.pointerId === dragPointerId) {
+        posX = dragStartPosX + (e.clientX - dragStartX);
+        posY = dragStartPosY + (e.clientY - dragStartY);
+        applyTransform();
+      }
+    });
+
+    function endPointer(e) {
+      activePointers.delete(e.pointerId);
+      if (activePointers.size === 1) {
+        const [remainingId, pt] = Array.from(activePointers.entries())[0];
+        dragPointerId = remainingId;
+        dragStartX = pt.x; dragStartY = pt.y;
+        dragStartPosX = posX; dragStartPosY = posY;
+      } else if (activePointers.size === 0) {
+        dragPointerId = null;
+      }
+    }
+    objImg.addEventListener('pointerup', endPointer);
+    objImg.addEventListener('pointercancel', endPointer);
+
+    arBtn.addEventListener('click', openAR);
+    closeBtn?.addEventListener('click', closeAR);
+    resetBtn?.addEventListener('click', () => { resetTransform(); hintEl.style.display = ''; });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) closeAR();
+    });
+    objImg.addEventListener('pointerdown', () => { hintEl.style.display = 'none'; }, { once: false });
   }
 
 })();

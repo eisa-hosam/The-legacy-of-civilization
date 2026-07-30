@@ -967,6 +967,8 @@ body.fabs-open .fab-group .fab#to-top:not(.show){ opacity:0; visibility:hidden; 
   display:grid; grid-template-columns:repeat(3,1fr); gap:4px; max-width:420px;
   aspect-ratio:1/1; margin:30px auto; background:var(--blue-deep); padding:4px;
   border-radius:var(--radius-md); box-shadow:var(--shadow-card);
+  direction:ltr; /* الصفحة كلها RTL، وده كان بيقلب ترتيب المربعات بصريًا
+                    عكس ترتيبها المنطقي، فيظهر "صح" وهو غلط والعكس */
 }
 .puzzle-tile{
   background-size:300% 300%; border-radius:6px; cursor:pointer;
@@ -1100,6 +1102,10 @@ html.a11y-contrast a, html.a11y-contrast h1, html.a11y-contrast h2, html.a11y-co
 .futuristic-login input:focus{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,175,55,.15); }
 .futuristic-login .auth-forgot{ color:var(--sand); }
 .futuristic-login .auth-forgot:hover{ color:var(--gold-light); }
+.futuristic-login .auth-divider{ color:var(--sand); }
+.futuristic-login .auth-divider::before,
+.futuristic-login .auth-divider::after{ background:rgba(212,175,55,.25); }
+.futuristic-login .btn-google-lg{ margin-top:2px; }
 .login-error{ color:#c0392b; min-height:1em; }
 #login-submit-btn.btn-loading{ opacity:.65; pointer-events:none; }
 

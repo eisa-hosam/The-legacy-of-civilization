@@ -56,6 +56,8 @@ html.theme-light .footer-links a{ color:#33455e; }
 .otd-icon{ font-size:2rem; flex:none; line-height:1; }
 .otd-date{ color:var(--gold-light); font-size:.85rem; letter-spacing:1px; margin-bottom:6px; display:block; }
 .otd-text{ color:var(--sand); line-height:1.9; }
+.otd-text ul{ margin:0; padding-inline-start:22px; display:flex; flex-direction:column; gap:8px; }
+.otd-text ul li{ font-size:.95rem; }
 
 /* ---------- 5) تحدي اليوم ولوحة الصدارة ---------- */
 .daily-card{
@@ -142,20 +144,24 @@ html.theme-light .footer-links a{ color:#33455e; }
    (نفس أزرق الـ hero وشريط الإحصائيات) عشان الذهبي يبان بوضوح. */
 .otd-section,
 #daily-challenge,
-#real-map{
+#real-map,
+#sources{
   background:linear-gradient(180deg, var(--blue-deep) 0%, var(--blue-royal) 55%, var(--blue-deep) 100%);
   padding-top:52px; padding-bottom:52px;
   border-top:1px solid var(--gold-soft); border-bottom:1px solid var(--gold-soft);
 }
 .otd-section .section-title h2,
 #daily-challenge .section-title h2,
-#real-map .section-title h2{ color:var(--white); }
+#real-map .section-title h2,
+#sources .section-title h2{ color:var(--white); }
 .otd-section .section-title p,
 #daily-challenge .section-title p,
-#real-map .section-title p{ color:var(--sand); }
+#real-map .section-title p,
+#sources .section-title p{ color:var(--sand); }
 .otd-section .section-title .eyebrow,
 #daily-challenge .section-title .eyebrow,
-#real-map .section-title .eyebrow{ color:var(--blue-glow); }
+#real-map .section-title .eyebrow,
+#sources .section-title .eyebrow{ color:var(--blue-glow); }
 
 .otd-card,
 .daily-card,
@@ -169,12 +175,14 @@ html.theme-light .footer-links a{ color:#33455e; }
 /* في الوضع الفاتح: نفس الأقسام تاخد لون أزرق فاتح بدل الغامق عشان تفضل متناسقة */
 html.theme-light .otd-section,
 html.theme-light #daily-challenge,
-html.theme-light #real-map{
+html.theme-light #real-map,
+html.theme-light #sources{
   background:linear-gradient(180deg, #eef2f9 0%, #dce6fa 55%, #eef2f9 100%);
 }
 html.theme-light .otd-section .section-title h2,
 html.theme-light #daily-challenge .section-title h2,
-html.theme-light #real-map .section-title h2{ color:#0b1c33; }
+html.theme-light #real-map .section-title h2,
+html.theme-light #sources .section-title h2{ color:#0b1c33; }
 html.theme-light .daily-lb-row{ color:#0b1c33; }
 html.theme-light .daily-opt{ color:#0b1c33; }
 html.theme-light .weekly-champion-name,
@@ -295,106 +303,61 @@ html.theme-light .nav-lang-opt{ color:#0b1c33; }
   .item-rating-stars .star-btn{ font-size:1.25rem; }
   .daily-opt{ padding:10px 12px; font-size:.92rem; }
 }
-/* ---------- 12) زر الرسائل + نافذة المحادثات بين الزوار (تصميم أزرق وأحمر ثابت) ---------- */
-.nav-messages-btn{
-  position:relative; width:38px; height:38px; border-radius:50%; flex:none;
-  display:flex; align-items:center; justify-content:center;
-  background:var(--blue-royal); color:#fff;
-  border:1px solid rgba(224,87,107,.55); cursor:pointer;
-  transition:transform .3s var(--ease), background .3s var(--ease);
+/* ---------- 12) الواقع المعزز (AR): معاينة القطعة بالحجم الحقيقي عبر الكاميرا ---------- */
+.ar-overlay{
+  position:fixed; inset:0; z-index:999; background:#000;
+  display:none; overflow:hidden; touch-action:none;
 }
-.nav-messages-btn:hover{ transform:translateY(-2px) scale(1.06); background:var(--blue-lapis); }
-.nav-messages-badge{
-  position:absolute; top:-4px; inset-inline-end:-4px; min-width:16px; height:16px; padding:0 4px;
-  border-radius:999px; background:#e0576b; color:#fff; font-size:.65rem; font-weight:800;
-  display:flex; align-items:center; justify-content:center; line-height:1; border:2px solid var(--blue-deep);
+.ar-overlay.open{ display:block; }
+#ar-video{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  background:#000;
 }
+.ar-stage{
+  position:absolute; inset:0; overflow:hidden; touch-action:none;
+}
+#ar-object{
+  position:absolute; top:50%; left:50%; max-width:none;
+  width:260px; height:auto;
+  transform:translate(-50%,-50%) scale(1);
+  transform-origin:center center;
+  filter:drop-shadow(0 18px 26px rgba(0,0,0,.55));
+  user-select:none; -webkit-user-drag:none; cursor:grab;
+  touch-action:none;
+}
+#ar-object:active{ cursor:grabbing; }
+.ar-topbar{
+  position:absolute; top:0; inset-inline:0; z-index:2; padding:14px 16px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  background:linear-gradient(180deg, rgba(0,0,0,.55), transparent);
+}
+.ar-icon-btn{
+  width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,.35);
+  background:rgba(0,0,0,.35); color:#fff; font-size:1.1rem; line-height:1;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  backdrop-filter:blur(4px);
+}
+.ar-icon-btn:hover{ background:rgba(212,175,55,.35); }
+.ar-title{
+  color:#fff; font-size:.95rem; font-weight:700; text-align:center;
+  flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  text-shadow:0 2px 6px rgba(0,0,0,.6);
+}
+.ar-hint{
+  position:absolute; bottom:22px; inset-inline:16px; z-index:2;
+  background:rgba(0,0,0,.55); color:#fff; text-align:center; padding:12px 16px;
+  border-radius:14px; font-size:.85rem; line-height:1.8; backdrop-filter:blur(4px);
+  border:1px solid rgba(212,175,55,.35);
+}
+.ar-error{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  z-index:3; max-width:80%; text-align:center; color:#fff; font-size:.95rem;
+  line-height:1.9; display:none; background:rgba(0,0,0,.6); padding:20px 22px;
+  border-radius:16px; border:1px solid rgba(224,87,107,.5);
+}
+.ar-error.show{ display:block; }
 
-.messages-container{
-  display:flex; gap:20px; height:calc(100svh - 190px); padding-top:18px; padding-bottom:24px;
-}
-.messages-list-pane{
-  width:320px; flex:none; display:flex; flex-direction:column; gap:14px;
-  background:var(--blue-deep); border:1px solid rgba(224,87,107,.35); border-radius:16px;
-  padding:16px; overflow:hidden;
-}
-.messages-newchat{ position:relative; flex:none; }
-.messages-newchat input{
-  width:100%; padding:10px 14px; border-radius:12px; border:1px solid rgba(224,87,107,.45);
-  background:var(--blue-royal); color:#fff; font-size:.9rem;
-}
-.messages-newchat input::placeholder{ color:rgba(255,255,255,.65); }
-.messages-search-results{
-  position:absolute; top:calc(100% + 6px); inset-inline:0; z-index:20;
-  background:var(--blue-royal); border:1px solid rgba(224,87,107,.45); border-radius:12px;
-  max-height:240px; overflow-y:auto; display:none; box-shadow:0 14px 34px -14px rgba(0,0,0,.5);
-}
-.messages-search-results.show{ display:block; }
-.messages-search-result{
-  display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer; color:#fff;
-  border-bottom:1px solid rgba(255,255,255,.08); font-size:.88rem;
-}
-.messages-search-result:last-child{ border-bottom:none; }
-.messages-search-result:hover{ background:rgba(224,87,107,.22); }
-.messages-search-empty{ padding:12px; font-size:.85rem; color:rgba(255,255,255,.7); text-align:center; }
-
-.messages-convo-list{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
-.messages-empty-hint{ font-size:.85rem; color:rgba(255,255,255,.7); text-align:center; padding:18px 8px; line-height:1.8; }
-.messages-convo-item{
-  display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; cursor:pointer;
-  border:1px solid transparent; transition:background .2s, border-color .2s;
-}
-.messages-convo-item:hover{ background:rgba(224,87,107,.14); }
-.messages-convo-item.active{ background:rgba(224,87,107,.22); border-color:rgba(224,87,107,.5); }
-.messages-convo-avatar{
-  width:38px; height:38px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(135deg,var(--blue-lapis),var(--blue-royal)); color:#fff; font-weight:800; font-size:.85rem;
-}
-.messages-convo-info{ flex:1; min-width:0; }
-.messages-convo-name{ font-weight:700; font-size:.9rem; color:#fff; display:flex; align-items:center; gap:6px; }
-.messages-convo-last{ font-size:.8rem; color:rgba(255,255,255,.65); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.messages-convo-dot{ width:9px; height:9px; border-radius:50%; background:#e0576b; flex:none; }
-
-.messages-thread-pane{
-  flex:1; min-width:0; display:flex; flex-direction:column;
-  background:var(--blue-deep); border:1px solid rgba(224,87,107,.35); border-radius:16px; overflow:hidden;
-}
-.messages-thread-empty{
-  flex:1; display:flex; align-items:center; justify-content:center; text-align:center;
-  color:rgba(255,255,255,.7); font-size:.95rem; padding:20px;
-}
-.messages-thread-active{ display:flex; flex-direction:column; height:100%; }
-.messages-thread-head{
-  padding:14px 18px; border-bottom:1px solid rgba(224,87,107,.35); font-weight:700; color:#fff;
-  background:var(--blue-royal); display:flex; align-items:center; gap:10px; flex:none;
-}
-.messages-thread-body{ flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:10px; }
-.messages-bubble{
-  max-width:72%; padding:10px 14px; border-radius:16px; font-size:.9rem; line-height:1.7;
-  background:rgba(224,87,107,.2); border:1px solid rgba(224,87,107,.4); color:#fff; align-self:flex-start;
-}
-.messages-bubble.mine{
-  align-self:flex-end; background:linear-gradient(135deg,var(--blue-lapis),var(--blue-royal)); color:#fff;
-}
-.messages-bubble time{ display:block; font-size:.68rem; opacity:.75; margin-top:4px; }
-.messages-thread-form{ display:flex; gap:10px; padding:14px 16px; border-top:1px solid rgba(224,87,107,.35); flex:none; }
-.messages-thread-form input{
-  flex:1; padding:10px 14px; border-radius:12px; border:1px solid rgba(224,87,107,.45);
-  background:var(--blue-royal); color:#fff; font-size:.9rem;
-}
-.messages-thread-form input::placeholder{ color:rgba(255,255,255,.65); }
-.messages-thread-form .btn{
-  background:#e0576b; color:#fff; border:1px solid rgba(255,255,255,.2);
-}
-.messages-thread-form .btn:hover{ background:#c94259; }
-
-/* التصميم هنا ثابت (أزرق غامق + أحمر) بقصد، ومش بيتأثر بتبديل الثيم الفاتح/الغامق
-   للموقع، عشان يفضل واضح ومقروء في الحالتين */
-@media (max-width:860px){
-  .messages-container{ flex-direction:column; height:calc(100svh - 170px); }
-  .messages-list-pane{ width:auto; }
-  .messages-list-pane, .messages-thread-pane{ flex:none; }
-  .messages-thread-pane{ flex:1; }
-  .messages-container.thread-open .messages-list-pane{ display:none; }
-  .messages-container:not(.thread-open) .messages-thread-pane{ display:none; }
+@media (max-width:480px){
+  .ar-hint{ font-size:.78rem; padding:10px 12px; }
+  .ar-icon-btn{ width:36px; height:36px; font-size:1rem; }
 }
