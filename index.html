@@ -23,6 +23,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400..700&family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="features.css">
+<link rel="stylesheet" href="mission-game.css">
 </head>
 <body>
 <!-- =====================================================================
@@ -175,6 +176,10 @@
         <span data-i18n="hero.btn1">استكشف الأجنحة</span>
       </a>
       <a href="#wings" class="btn btn-outline" data-i18n="hero.btn2">تعلّم لغات الحضارات</a>
+      <button type="button" class="btn btn-gold mission-trigger-btn" data-mission-trigger>
+        <span class="mission-btn-badge">جديد</span>
+        <span>🕹️ مهمة إنقاذ الحضارة</span>
+      </button>
     </div>
   </div>
 
@@ -227,6 +232,9 @@
       <span class="eyebrow" data-i18n="wings.eyebrow">أجنحة المتحف</span>
       <h2 data-i18n="wings.title">ست حضارات.. قصة واحدة للإنسانية</h2>
       <p data-i18n="wings.sub">اختر جناحًا لتستكشف أبرز آثاره وقصصه وحقائقه المثيرة.</p>
+      <button type="button" class="btn btn-line" style="margin-top:14px;" data-mission-trigger>
+        🕹️ جرّب "مهمة إنقاذ الحضارة" التفاعلية
+      </button>
     </div>
 
     <div class="wings-grid">
@@ -435,10 +443,10 @@
     </div>
 
     <div class="real-gmap-wrap reveal">
-      <h3 class="real-gmap-title">تصفّح المواقع على خرائط Google الحقيقية</h3>
+      <h3 class="real-gmap-title">تصفّح المواقع الأثرية على الخريطة بدقّة</h3>
       <div class="real-gmap-chips" id="real-gmap-chips"></div>
       <div class="real-gmap-frame-wrap">
-        <iframe id="real-gmap-frame" class="real-gmap-frame" title="خريطة Google للموقع الأثري المختار" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        <iframe id="real-gmap-frame" class="real-gmap-frame" title="خريطة دقيقة للموقع الأثري المختار" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
         <a href="#" target="_blank" rel="noopener" id="real-gmap-link" class="real-gmap-link">
           فتح في خرائط Google
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M9 7h8v8"/></svg>
@@ -1081,6 +1089,7 @@
 <script src="auth.js"></script>
 <script src="world-heritage-data.js"></script>
 <script src="features.js"></script>
+<script src="mission-game.js"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', () => {

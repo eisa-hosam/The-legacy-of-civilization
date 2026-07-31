@@ -544,9 +544,22 @@
     if (!chipsWrap || !frame || !link) return;
 
     function urlsFor(site) {
+      // ملحوظة مهمة (بعد أكتر من محاولة): خرائط جوجل القابلة للتضمين (embed) من غير
+      // مفتاح API بتستخدم "بحث نصي" داخليًا حتى لو بعتنا إحداثيات رقمية بس - وده بيخلّي
+      // جوجل أحيانًا يرجّح أقرب نشاط تجاري مسجّل جنب الإحداثيات بدل النقطة بالظبط،
+      // ومحاولات زي "loc:" أو endpoint البحث الرسمي (api=1) ما بتحلش المشكلة دي في
+      // التضمين (وبعضها كمان بيرفض يفتح جوه iframe أصلاً).
+      // الحل المضمون 100%: نستخدم OpenStreetMap للمعاينة المصغّرة جوه الموقع - بيرسم
+      // الدبوس حرفيًا على الإحداثيات اللي بنديله من غير أي بحث أو ترجيح لمكان تاني،
+      // ومفيش أي مشاكل تضمين (iframe) لأنه مجاني ومفتوح بالكامل.
+      // وبنسيب زرار "افتح في خرائط Google" برضه شغال وبيوديك لخرائط جوجل الحقيقية
+      // (بيفتح في تبويب جديد مش جوه iframe، فمفيش مشكلة حجب هناك).
+      const lat = site.lat, lng = site.lng;
+      const delta = 0.01; // نطاق ضيق (~1-2 كم) حوالين الموقع عشان الدبوس يبان واضح وقريب من الأثر
+      const bbox = [lng - delta, lat - delta, lng + delta, lat + delta].join(',');
       return {
-        embed: `https://www.google.com/maps?q=${site.lat},${site.lng}&z=13&output=embed`,
-        open: `https://www.google.com/maps?q=${site.lat},${site.lng}`
+        embed: `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`,
+        open: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lng}`)}`
       };
     }
 
