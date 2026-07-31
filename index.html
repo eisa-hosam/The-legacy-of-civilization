@@ -760,6 +760,21 @@
       </div>
       <span class="item-rating-summary" id="item-modal-rating-summary">جارٍ تحميل التقييمات...</span>
     </div>
+
+    <div class="item-comments" id="item-modal-comments">
+      <button type="button" class="item-comments-toggle" id="item-comments-toggle" aria-expanded="false">
+        💬 التعليقات <span class="item-comments-count" id="item-comments-count"></span>
+        <svg class="item-comments-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="item-comments-body" id="item-comments-body">
+        <form class="item-comment-form" id="item-comment-form">
+          <textarea id="item-comment-input" maxlength="400" placeholder="اكتب رأيك أو ذكرى ليك مع القطعة دي..." rows="2"></textarea>
+          <button type="submit" class="btn btn-gold">نشر</button>
+        </form>
+        <div class="item-comments-list" id="item-comments-list"></div>
+      </div>
+    </div>
+
     <div class="modal-btn-row">
       <button class="btn btn-line" id="item-puzzle-btn" style="margin-top:6px;">
         <svg width="18" height="18" viewBox="0 0 64 64"><use href="#hg-hand2"></use></svg>
@@ -774,6 +789,27 @@
         شارك القطعة
       </button>
     </div>
+  </div>
+</div>
+
+<!-- نافذة الكبسولة الزمنية: رسالة للمستقبل بتتقفل لحد تاريخ معيّن -->
+<div class="modal-overlay" id="capsule-modal">
+  <div class="modal-box capsule-modal-box">
+    <button class="modal-close">✕</button>
+    <h3 class="capsule-title">📦 الكبسولة الزمنية</h3>
+    <p class="capsule-intro">اكتب رسالة أو توقّع عن المستقبل، هتتقفل لحد التاريخ اللي تحدده وبعدين هتظهرلك تاني.</p>
+    <form class="capsule-form" id="capsule-form">
+      <textarea id="capsule-message" maxlength="600" rows="4" placeholder="اكتب رسالتك للمستقبل هنا..."></textarea>
+      <div class="capsule-duration-chips">
+        <button type="button" class="capsule-chip" data-months="1">بعد شهر</button>
+        <button type="button" class="capsule-chip" data-months="6">بعد 6 شهور</button>
+        <button type="button" class="capsule-chip active" data-months="12">بعد سنة</button>
+        <button type="button" class="capsule-chip" data-custom="1">تاريخ مخصص</button>
+      </div>
+      <input type="date" id="capsule-custom-date" class="capsule-custom-date" style="display:none;">
+      <button type="submit" class="btn btn-gold">🔒 اقفل الكبسولة</button>
+    </form>
+    <div class="capsule-list" id="capsule-list"></div>
   </div>
 </div>
 
@@ -1054,6 +1090,7 @@
 <div class="fab-group fab-group-right" id="fab-group-right">
   <button class="fab" id="a11y-btn" aria-label="إمكانية الوصول" title="إمكانية الوصول">♿</button>
   <button class="fab" id="suggestion-box-btn" data-open-modal="suggestion-modal" aria-label="صندوق الاقتراحات" title="عندك اقتراح؟">💡</button>
+  <button class="fab" id="capsule-trigger-btn" data-open-modal="capsule-modal" aria-label="الكبسولة الزمنية" title="الكبسولة الزمنية">📦</button>
 </div>
 
 <!-- =====================================================================
@@ -1090,6 +1127,7 @@
 <script src="world-heritage-data.js"></script>
 <script src="features.js"></script>
 <script src="mission-game.js"></script>
+<script src="capsule.js"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', () => {

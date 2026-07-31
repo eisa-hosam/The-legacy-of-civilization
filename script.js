@@ -1400,6 +1400,96 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  const itemCommentsToggle = document.getElementById('item-comments-toggle');
+  const itemCommentsBody = document.getElementById('item-comments-body');
+  const itemCommentsCount = document.getElementById('item-comments-count');
+  const itemCommentsList = document.getElementById('item-comments-list');
+  const itemCommentForm = document.getElementById('item-comment-form');
+  const itemCommentInput = document.getElementById('item-comment-input');
+  let itemCommentsLoaded = false;
+
+  function timeAgoAr(date){
+    const diffMs = Date.now() - new Date(date).getTime();
+    const mins = Math.round(diffMs / 60000);
+    if (mins < 1) return 'الآن';
+    if (mins < 60) return `من ${mins} دقيقة`;
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24) return `من ${hrs} ساعة`;
+    const days = Math.round(hrs / 24);
+    if (days < 30) return `من ${days} يوم`;
+    return new Date(date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function renderComments(list){
+    if (!itemCommentsList) return;
+    itemCommentsCount.textContent = list.length ? `(${list.length})` : '';
+    if (!list.length){
+      itemCommentsList.innerHTML = `<div class="item-comments-empty">لسّه مفيش تعليقات — كن أول من يشارك رأيه! 💬</div>`;
+      return;
+    }
+    itemCommentsList.innerHTML = list.map(c => `
+      <div class="item-comment-card" data-comment-id="${c.id}">
+        <div class="item-comment-card-head">
+          <strong>${escapeHTMLLocal(c.username)}</strong>
+          <span>
+            <time>${timeAgoAr(c.createdAt)}</time>
+            ${c.mine ? `<button type="button" class="item-comment-delete" data-comment-id="${c.id}">حذف</button>` : ''}
+          </span>
+        </div>
+        <p>${escapeHTMLLocal(c.text)}</p>
+      </div>
+    `).join('');
+  }
+
+  function escapeHTMLLocal(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  async function loadItemComments(item, wingKey){
+    if (!window.MuseumAuth || !itemCommentsList) return;
+    itemCommentsList.innerHTML = `<div class="item-comments-empty">جارٍ تحميل التعليقات...</div>`;
+    const list = await window.MuseumAuth.getArtifactComments(item, wingKey);
+    renderComments(list);
+  }
+
+  itemCommentsToggle?.addEventListener('click', () => {
+    const isOpen = itemCommentsBody.classList.toggle('open');
+    itemCommentsToggle.setAttribute('aria-expanded', String(isOpen));
+    if (isOpen && !itemCommentsLoaded){
+      itemCommentsLoaded = true;
+      const ctx = window.__currentItemForPuzzle;
+      if (ctx) loadItemComments(ctx.item, ctx.wingKey);
+    }
+  });
+
+  itemCommentForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const ctx = window.__currentItemForPuzzle;
+    if (!ctx || !window.MuseumAuth) return;
+    const text = itemCommentInput.value.trim();
+    if (!text) return;
+    const submitBtn = itemCommentForm.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+    const res = await window.MuseumAuth.addArtifactComment(ctx.item, ctx.wingKey, text);
+    if (submitBtn) submitBtn.disabled = false;
+    if (res && res.needsLogin) return;
+    if (res && res.error) { showToast('تعذّر نشر التعليق، حاول تاني.', true); return; }
+    if (res && res.ok){
+      itemCommentInput.value = '';
+      showToast('تم نشر تعليقك! 💬');
+      loadItemComments(ctx.item, ctx.wingKey);
+    }
+  });
+
+  itemCommentsList?.addEventListener('click', async (e) => {
+    const delBtn = e.target.closest('.item-comment-delete');
+    if (!delBtn) return;
+    const ctx = window.__currentItemForPuzzle;
+    if (!ctx || !window.MuseumAuth) return;
+    const res = await window.MuseumAuth.deleteArtifactComment(ctx.item, ctx.wingKey, delBtn.dataset.commentId);
+    if (res && res.ok) loadItemComments(ctx.item, ctx.wingKey);
+  });
+
   function openItemModal(item, wingKey){
     if (!itemModal || !item) return;
     const src = pickItemImage(item);
@@ -1413,6 +1503,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.MuseumAuth) window.MuseumAuth.logArtifactView(item, wingKey);
     if (itemFavBtn) itemFavBtn.classList.toggle('is-fav', isFav(wingKey, item.t));
     loadItemRating(item, wingKey);
+    itemCommentsLoaded = false;
+    if (itemCommentsBody) { itemCommentsBody.classList.remove('open'); }
+    if (itemCommentsToggle) itemCommentsToggle.setAttribute('aria-expanded', 'false');
+    if (itemCommentsCount) itemCommentsCount.textContent = '';
     openModal(itemModal);
   }
 

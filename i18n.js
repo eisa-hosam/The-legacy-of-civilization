@@ -527,16 +527,42 @@
     return found;
   }
 
+  /* MyMemory أحيانًا بترجع HTTP 200 لكن جوّه الرد رسالة تحذير نصية
+     (زي "MYMEMORY WARNING: YOU USED ALL AVAILABLE FREE TRANSLATIONS...")
+     بدل الترجمة الفعلية وقت ما تنفد الحصة اليومية المجانية. الكود القديم
+     كان بيحطها في الصفحة كأنها ترجمة سليمة، فكانت بعض النصوص بعد فترة
+     استخدام تتحول لرسالة إنجليزية غريبة بدل الترجمة أو تفضل عربي مقفولة.
+     هنا بنكتشف الحالة دي ونرفضها عشان النص يفضل زي ما هو (عربي) لحد ما
+     نعيد المحاولة تاني، بدل ما نلوّث الصفحة برسالة تحذير. */
+  function isBadTranslation(data, translated) {
+    if (!translated) return true;
+    if (data && data.responseStatus && Number(data.responseStatus) !== 200) return true;
+    if (/MYMEMORY WARNING|INVALID TARGET LANGUAGE|INVALID SOURCE LANGUAGE|LANGUAGE PAIR|QUERY LENGTH LIMIT/i.test(translated)) return true;
+    const match = data && data.responseData && data.responseData.match;
+    if (typeof match === 'number' && match < 0.3) return true;
+    return false;
+  }
+
+  const __quotaCooldownUntil = { until: 0 };
+
   async function fetchTranslation(text, lang) {
     const cached = readCache(lang, text);
     if (cached) return cached;
+    if (Date.now() < __quotaCooldownUntil.until) return null; // مستنيين تنعاد الحصة
     try {
       const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.slice(0, 480)) + '&langpair=ar|' + lang;
       const res = await fetch(url);
       if (!res.ok) return null;
       const data = await res.json();
       const translated = data && data.responseData && data.responseData.translatedText;
-      if (translated) { writeCache(lang, text, translated); return translated; }
+      if (isBadTranslation(data, translated)) {
+        // الحصة المجانية اليومية غالبًا نفدت؛ نستنى 5 دقايق قبل ما نحاول تاني
+        // بدل ما نضرب مئات الطلبات الفاشلة على السيرفر لحد ما نرجع نجرب.
+        __quotaCooldownUntil.until = Date.now() + 5 * 60 * 1000;
+        return null;
+      }
+      writeCache(lang, text, translated);
+      return translated;
     } catch (e) { /* هنسيب النص العربي زي ما هو لو الترجمة فشلت */ }
     return null;
   }
@@ -684,5 +710,16 @@
     scheduleTranslatePass();
     const observer = new MutationObserver(scheduleTranslatePass);
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+
+    // إعادة محاولة دورية: أي نص فضل عربي بسبب فشل مؤقت في الترجمة (نفاد
+    // الحصة، مشكلة شبكة...) بيتعاد استهدافه تلقائيًا كل دقيقة بدل ما يفضل
+    // واقف عربي للأبد لحد ما المستخدم يغيّر اللغة يدويًا تاني.
+    setInterval(() => {
+      const lang = window.MUSEUM_LANG || 'ar';
+      if (lang === 'ar') return;
+      trackedNodes.forEach((n) => { if (n.__mtLang !== lang) n.__mtLang = undefined; });
+      trackedAttrEls.forEach((el) => { if (el.__mtAttrLang !== lang) el.__mtAttrLang = undefined; });
+      scheduleTranslatePass();
+    }, 60 * 1000);
   });
 })();

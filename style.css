@@ -1358,4 +1358,68 @@ html.a11y-contrast a, html.a11y-contrast h1, html.a11y-contrast h2, html.a11y-co
 .badge-card strong{ font-size:.82rem; color:var(--blue-deep); }
 .badge-card span{ font-size:.7rem; color:var(--ink-soft); line-height:1.4; }
 .badge-card.unlocked{ animation:badge-in .5s var(--ease) both; }
+.badge-share-btn{
+  margin-top:4px; border:1px solid var(--gold,#d4af37); background:transparent; color:var(--blue-deep);
+  font-family:inherit; font-size:.68rem; font-weight:700; padding:5px 10px; border-radius:999px; cursor:pointer;
+  transition:.2s;
+}
+.badge-share-btn:hover{ background:var(--gold,#d4af37); color:#2a1a00; }
+
+/* ---------- 20ل) التعليقات النصية على القطع ---------- */
+.item-comments{ margin-top:14px; border-top:1px solid rgba(11,61,145,.12); padding-top:12px; }
+.item-comments-toggle{
+  display:flex; align-items:center; gap:8px; width:100%; background:none; border:none; cursor:pointer;
+  font-family:inherit; font-size:.92rem; font-weight:700; color:var(--blue-deep); padding:4px 0;
+}
+.item-comments-count{ font-weight:400; color:var(--ink-soft); font-size:.82rem; }
+.item-comments-chevron{ margin-inline-start:auto; transition:transform .25s var(--ease); }
+.item-comments-toggle[aria-expanded="true"] .item-comments-chevron{ transform:rotate(180deg); }
+.item-comments-body{ display:none; margin-top:10px; }
+.item-comments-body.open{ display:block; }
+.item-comment-form{ display:flex; gap:8px; align-items:flex-end; margin-bottom:12px; }
+.item-comment-form textarea{
+  flex:1; resize:vertical; min-height:44px; max-height:140px; border-radius:12px;
+  border:1px solid rgba(11,61,145,.18); padding:9px 12px; font-family:inherit; font-size:.86rem;
+  background:var(--white);
+}
+.item-comment-form .btn{ padding:9px 16px; font-size:.82rem; white-space:nowrap; }
+.item-comments-list{ display:flex; flex-direction:column; gap:10px; max-height:280px; overflow-y:auto; }
+.item-comment-card{
+  background:rgba(11,61,145,.04); border:1px solid rgba(11,61,145,.1); border-radius:12px; padding:10px 12px;
+}
+.item-comment-card-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.item-comment-card strong{ font-size:.82rem; color:var(--blue-deep); }
+.item-comment-card time{ font-size:.7rem; color:var(--ink-soft); }
+.item-comment-card p{ font-size:.85rem; line-height:1.6; margin:0; word-break:break-word; }
+.item-comment-delete{
+  background:none; border:none; color:#c0392b; cursor:pointer; font-size:.72rem; margin-inline-start:8px;
+}
+.item-comments-empty{ font-size:.82rem; color:var(--ink-soft); text-align:center; padding:10px 0; }
+
+/* ---------- 20م) الكبسولة الزمنية (Time Capsule) ---------- */
+.capsule-modal-box{ max-width:520px; }
+.capsule-title{ font-family:var(--font-display,serif); color:var(--blue-deep); margin-bottom:6px; }
+.capsule-intro{ font-size:.86rem; color:var(--ink-soft); line-height:1.7; margin-bottom:16px; }
+.capsule-form{ display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+.capsule-form textarea{
+  resize:vertical; min-height:80px; border-radius:12px; border:1px solid rgba(11,61,145,.18);
+  padding:10px 12px; font-family:inherit; font-size:.88rem; background:var(--white);
+}
+.capsule-duration-chips{ display:flex; gap:8px; flex-wrap:wrap; }
+.capsule-chip{
+  padding:7px 14px; border-radius:999px; cursor:pointer; font-family:inherit; font-size:.8rem;
+  border:1px solid rgba(11,61,145,.22); background:var(--white); color:var(--blue-deep); transition:.2s;
+}
+.capsule-chip.active{ background:var(--blue-deep); color:#fff; border-color:var(--blue-deep); }
+.capsule-custom-date{
+  border-radius:10px; border:1px solid rgba(11,61,145,.18); padding:8px 12px; font-family:inherit; font-size:.85rem;
+}
+.capsule-list{ display:flex; flex-direction:column; gap:10px; max-height:320px; overflow-y:auto; border-top:1px solid rgba(11,61,145,.12); padding-top:14px; }
+.capsule-card{ border-radius:14px; padding:12px 14px; border:1px solid rgba(11,61,145,.12); background:rgba(11,61,145,.03); }
+.capsule-card.unlocked{ background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(11,61,145,.04)); border-color:rgba(212,175,55,.35); }
+.capsule-card-head{ display:flex; justify-content:space-between; align-items:center; font-size:.74rem; color:var(--ink-soft); margin-bottom:6px; flex-wrap:wrap; gap:6px; }
+.capsule-unlock-tag{ color:#b8860b; font-weight:700; }
+.capsule-card p{ font-size:.86rem; line-height:1.7; margin:0; word-break:break-word; }
+.capsule-locked-hint{ color:var(--ink-soft); font-style:italic; }
+.capsule-empty{ font-size:.84rem; color:var(--ink-soft); text-align:center; padding:14px 0; }
 @keyframes badge-in{ from{ opacity:0; transform:scale(.7);} to{ opacity:1; transform:scale(1);} }

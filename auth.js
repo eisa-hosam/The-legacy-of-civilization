@@ -439,6 +439,61 @@ function downloadRestorationCertificate(username, itemTitle) {
   }, "image/png");
 }
 
+/* توليد صورة مربّعة قابلة للمشاركة لأي شارة إنجاز فتحها الزائر، بنفس
+   الفكرة البصرية لصندوق الصور التذكارية (Photo Booth) بتاع مهمة الإنقاذ. */
+function shareBadgeImage(badge, username) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080; canvas.height = 1080;
+  const c = canvas.getContext("2d");
+
+  const grad = c.createRadialGradient(540, 420, 60, 540, 540, 760);
+  grad.addColorStop(0, "#0b3d91"); grad.addColorStop(0.6, "#041233"); grad.addColorStop(1, "#020a1f");
+  c.fillStyle = grad; c.fillRect(0, 0, 1080, 1080);
+
+  c.strokeStyle = "#d4af37"; c.lineWidth = 8;
+  c.strokeRect(36, 36, 1008, 1008);
+  c.lineWidth = 2; c.strokeStyle = "rgba(212,175,55,.5)";
+  c.strokeRect(58, 58, 964, 964);
+
+  c.textAlign = "center"; c.direction = "rtl";
+
+  c.fillStyle = "#f3d97a"; c.font = "600 30px Cairo, sans-serif";
+  c.fillText("متحف إرث الحضارة", 540, 150);
+
+  // دائرة ذهبية خلف الإيموجي
+  c.beginPath(); c.arc(540, 400, 150, 0, Math.PI * 2);
+  const badgeGlow = c.createRadialGradient(540, 400, 30, 540, 400, 150);
+  badgeGlow.addColorStop(0, "rgba(212,175,55,.35)"); badgeGlow.addColorStop(1, "rgba(212,175,55,0)");
+  c.fillStyle = badgeGlow; c.fill();
+  c.font = "180px serif";
+  c.fillText(badge.emoji || "🏅", 540, 470);
+
+  c.fillStyle = "rgba(255,255,255,.8)"; c.font = "400 28px Cairo, sans-serif";
+  c.fillText("فتح إنجاز جديد", 540, 610);
+
+  c.fillStyle = "#fff"; c.font = "700 52px Cairo, sans-serif";
+  c.fillText(badge.name || "", 540, 680);
+
+  c.fillStyle = "rgba(255,255,255,.75)"; c.font = "400 26px Cairo, sans-serif";
+  wrapRestoreCertText(c, badge.desc || "", 540, 740, 820, 38);
+
+  c.strokeStyle = "rgba(212,175,55,.5)"; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(340, 870); c.lineTo(740, 870); c.stroke();
+  c.fillStyle = "#f3d97a"; c.font = "600 26px Cairo, sans-serif";
+  c.fillText(username || "زائر", 540, 915);
+
+  c.fillStyle = "#d4af37"; c.font = "500 22px Cairo, sans-serif";
+  c.fillText("🏛️ المتحف الرقمي التفاعلي — متحف إرث الحضارة", 540, 1000);
+
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `إنجاز-${badge.id || "badge"}.png`;
+    a.click();
+  }, "image/png");
+}
+
 /* ---------- 6ب) المفضلة (Favorites) ---------- */
 function isFavorite(wingKey, title) {
   if (!currentUser || !Array.isArray(currentUser.favorites)) return false;
@@ -539,6 +594,139 @@ async function rateArtifact(item, wingKey, value) {
     return { needsLogin: false, error: true };
   }
 }
+/* ---------- 6ج) الكبسولة الزمنية (Time Capsule) ----------
+   الزائر يكتب رسالة أو توقّع عن المستقبل، بتتقفل لحد تاريخ معيّن يحدده،
+   وبعد ما التاريخ ده يجي بتظهرله تاني. كل رسالة بتتخزن في مستند مستقل في
+   مجموعة time_capsules مربوط بالـ uid بتاعه. */
+const CAPSULES_COLLECTION = "time_capsules";
+
+async function createTimeCapsule(message, unlockAtDate) {
+  if (!currentUser) return { needsLogin: true };
+  const text = String(message || "").trim().slice(0, 600);
+  if (!text) return { error: true };
+  const unlockAt = unlockAtDate instanceof Date ? unlockAtDate : new Date(unlockAtDate);
+  if (isNaN(unlockAt.getTime()) || unlockAt.getTime() <= Date.now()) return { error: true };
+  try {
+    await db.collection(CAPSULES_COLLECTION).add({
+      uid: currentUser.uid,
+      message: text,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      unlockAt: firebase.firestore.Timestamp.fromDate(unlockAt),
+      opened: false
+    });
+    return { ok: true };
+  } catch (e) {
+    console.warn("تعذّر حفظ الكبسولة الزمنية:", e);
+    return { error: true };
+  }
+}
+
+async function getMyTimeCapsules() {
+  if (!currentUser) return [];
+  try {
+    const snap = await db.collection(CAPSULES_COLLECTION)
+      .where("uid", "==", currentUser.uid)
+      .get();
+    const list = [];
+    snap.forEach((doc) => {
+      const d = doc.data();
+      list.push({
+        id: doc.id,
+        message: d.message || "",
+        createdAt: d.createdAt && d.createdAt.toDate ? d.createdAt.toDate() : null,
+        unlockAt: d.unlockAt && d.unlockAt.toDate ? d.unlockAt.toDate() : null,
+        opened: !!d.opened
+      });
+    });
+    list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    return list;
+  } catch (e) {
+    console.warn("تعذّر جلب الكبسولات الزمنية:", e);
+    return [];
+  }
+}
+
+async function markTimeCapsuleOpened(id) {
+  if (!currentUser || !id) return;
+  try {
+    await db.collection(CAPSULES_COLLECTION).doc(id).update({
+      opened: true,
+      openedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (e) { /* مش خطأ فادح لو فشل تحديث حالة الفتح */ }
+}
+
+/* ---------- 6د) تعليقات نصية على القطع الأثرية ----------
+   نفس فكرة التقييم بالنجوم فوق، لكن بدل رقم بيكتب الزائر رأيه أو ذكرى
+   ليه مع القطعة. بنستخدم نفس معرّف القطعة (artifactRatingId) عشان نربط
+   التعليقات بمستند التقييم نفسه في sub-collection مستقلة. */
+const COMMENTS_LIMIT = 40;
+
+async function addArtifactComment(item, wingKey, text) {
+  if (!currentUser) {
+    const loginModal = document.getElementById("login-modal");
+    if (loginModal) { loginModal.classList.add("active"); document.body.style.overflow = "hidden"; }
+    showToast("سجّل دخولك الأول عشان تكتب تعليق 💬", true);
+    return { needsLogin: true };
+  }
+  const clean = String(text || "").trim().slice(0, 400);
+  if (!clean) return { error: true };
+  const title = item.t || "قطعة أثرية";
+  const ref = db.collection(RATINGS_COLLECTION).doc(artifactRatingId(wingKey, title)).collection("comments");
+  try {
+    const docRef = await ref.add({
+      uid: currentUser.uid,
+      username: currentUser.username,
+      text: clean,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    computeAndSyncBadges(currentUser.uid);
+    return { ok: true, id: docRef.id, username: currentUser.username, text: clean, createdAt: new Date() };
+  } catch (e) {
+    console.warn("تعذّر حفظ التعليق:", e);
+    showToast("تعذّر حفظ تعليقك، حاول تاني.", true);
+    return { error: true };
+  }
+}
+
+async function getArtifactComments(item, wingKey) {
+  const title = item.t || "قطعة أثرية";
+  const ref = db.collection(RATINGS_COLLECTION).doc(artifactRatingId(wingKey, title)).collection("comments");
+  try {
+    const snap = await ref.orderBy("createdAt", "desc").limit(COMMENTS_LIMIT).get();
+    const list = [];
+    snap.forEach((doc) => {
+      const d = doc.data();
+      list.push({
+        id: doc.id,
+        uid: d.uid,
+        username: d.username || "زائر",
+        text: d.text || "",
+        createdAt: d.createdAt && d.createdAt.toDate ? d.createdAt.toDate() : new Date(),
+        mine: !!(currentUser && d.uid === currentUser.uid)
+      });
+    });
+    return list;
+  } catch (e) {
+    console.warn("تعذّر جلب التعليقات:", e);
+    return [];
+  }
+}
+
+async function deleteArtifactComment(item, wingKey, commentId) {
+  if (!currentUser || !commentId) return { error: true };
+  const title = item.t || "قطعة أثرية";
+  const ref = db.collection(RATINGS_COLLECTION).doc(artifactRatingId(wingKey, title)).collection("comments").doc(commentId);
+  try {
+    const snap = await ref.get();
+    if (!snap.exists || (snap.data().uid !== currentUser.uid && !currentUser.isAdmin)) return { error: true };
+    await ref.delete();
+    return { ok: true };
+  } catch (e) {
+    return { error: true };
+  }
+}
+
 window.MuseumAuth = {
   logArtifactView: (item, wingKey) => logArtifactView(item, wingKey),
   toggleFavorite: (item, wingKey) => toggleFavorite(item, wingKey),
@@ -547,7 +735,17 @@ window.MuseumAuth = {
   rateArtifact: (item, wingKey, value) => rateArtifact(item, wingKey, value),
   isLoggedIn: () => !!currentUser,
   logArtifactRestoration: (item, wingKey) => logArtifactRestoration(item, wingKey),
-  downloadRestorationCertificate: (itemTitle) => downloadRestorationCertificate(currentUser ? currentUser.username : "زائر", itemTitle)
+  downloadRestorationCertificate: (itemTitle) => downloadRestorationCertificate(currentUser ? currentUser.username : "زائر", itemTitle),
+  createTimeCapsule: (message, unlockAtDate) => createTimeCapsule(message, unlockAtDate),
+  getMyTimeCapsules: () => getMyTimeCapsules(),
+  markTimeCapsuleOpened: (id) => markTimeCapsuleOpened(id),
+  shareBadge: (badgeId) => {
+    const b = BADGES.find(x => x.id === badgeId);
+    if (b) shareBadgeImage(b, currentUser ? currentUser.username : "زائر");
+  },
+  addArtifactComment: (item, wingKey, text) => addArtifactComment(item, wingKey, text),
+  getArtifactComments: (item, wingKey) => getArtifactComments(item, wingKey),
+  deleteArtifactComment: (item, wingKey, commentId) => deleteArtifactComment(item, wingKey, commentId)
 };
 
 /* ---------- 7) اختبار الشخصية التاريخية ---------- */
@@ -879,6 +1077,7 @@ async function openProfileModal() {
           <span class="badge-emoji">${unlocked.has(b.id) ? b.emoji : "🔒"}</span>
           <strong>${escapeHTML(b.name)}</strong>
           <span>${escapeHTML(b.desc)}</span>
+          ${unlocked.has(b.id) ? `<button type="button" class="badge-share-btn" data-badge-id="${escapeHTML(b.id)}" title="شارك الإنجاز كصورة" aria-label="شارك الإنجاز كصورة">🔗 مشاركة</button>` : ""}
         </div>
       `).join("");
     }
@@ -902,6 +1101,11 @@ document.addEventListener("click", (e) => {
   const removeBtn = e.target.closest(".profile-fav-remove");
   if (removeBtn && currentUser) {
     toggleFavorite({ t: removeBtn.dataset.favTitle, d: "" }, removeBtn.dataset.favWing).then(() => openProfileModal());
+  }
+  const shareBadgeBtn = e.target.closest(".badge-share-btn");
+  if (shareBadgeBtn) {
+    const b = BADGES.find(x => x.id === shareBadgeBtn.dataset.badgeId);
+    if (b) shareBadgeImage(b, currentUser ? currentUser.username : "زائر");
   }
 });
 function renderProfilePersonality() {
