@@ -12,6 +12,8 @@
    8) تفعيل الإشعارات (يحتاج إعداد Firebase Cloud Messaging من طرفك)
    9) صندوق الاقتراحات
    10) الواقع المعزز (AR): معاينة القطعة أمامك بالكاميرا بحجمها الحقيقي تقريبًا
+   11) مواقع التراث العالمي حول العالم (بحث وتصفح حسب الدولة)
+   12) خريطة Google الحقيقية التفاعلية للمواقع الأثرية
    ===================================================================== */
 
 (function () {
@@ -76,10 +78,12 @@
     initOnThisDay();
     initDailyChallenge();
     initRealMap();
+    initRealGoogleMap();
     initVoiceSearch();
     initPushButton();
     initSuggestionBox();
     initAR();
+    initWorldHeritage();
   });
 
   /* ---------- 4) في مثل هذا اليوم ---------- */
@@ -525,8 +529,44 @@
         const wingKey = dot.dataset.wing;
         document.querySelector(`.wing-card[data-wing="${wingKey}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         document.querySelector(`.wing-card[data-wing="${wingKey}"]`)?.click();
+        document.querySelectorAll('.real-gmap-chip').forEach(chip => {
+          if (chip.textContent.trim() === site.name) chip.click();
+        });
       });
     });
+  }
+
+  /* ---------- 12) خريطة Google الحقيقية التفاعلية للمواقع الأثرية ---------- */
+  function initRealGoogleMap() {
+    const chipsWrap = document.getElementById('real-gmap-chips');
+    const frame = document.getElementById('real-gmap-frame');
+    const link = document.getElementById('real-gmap-link');
+    if (!chipsWrap || !frame || !link) return;
+
+    function urlsFor(site) {
+      return {
+        embed: `https://www.google.com/maps?q=${site.lat},${site.lng}&z=13&output=embed`,
+        open: `https://www.google.com/maps?q=${site.lat},${site.lng}`
+      };
+    }
+
+    function selectSite(site, chipEl) {
+      const { embed, open } = urlsFor(site);
+      frame.src = embed;
+      link.href = open;
+      chipsWrap.querySelectorAll('.real-gmap-chip').forEach(c => c.classList.remove('active'));
+      if (chipEl) chipEl.classList.add('active');
+    }
+
+    chipsWrap.innerHTML = REAL_SITES.map((site, i) =>
+      `<button type="button" class="real-gmap-chip${i === 0 ? ' active' : ''}" data-i="${i}">${site.name}</button>`
+    ).join('');
+
+    chipsWrap.querySelectorAll('.real-gmap-chip').forEach(chip => {
+      chip.addEventListener('click', () => selectSite(REAL_SITES[Number(chip.dataset.i)], chip));
+    });
+
+    selectSite(REAL_SITES[0], chipsWrap.querySelector('.real-gmap-chip'));
   }
 
   /* ---------- 7) البحث الصوتي ---------- */
@@ -828,6 +868,114 @@
       if (e.key === 'Escape' && overlay.classList.contains('open')) closeAR();
     });
     objImg.addEventListener('pointerdown', () => { hintEl.style.display = 'none'; }, { once: false });
+  }
+
+  /* ---------- 11) مواقع التراث العالمي حول العالم (World Heritage Sites) ---------- */
+  function initWorldHeritage() {
+    const data = window.WORLD_HERITAGE_DATA;
+    const countryListEl = document.getElementById('wh-country-list');
+    const sitesPanelEl = document.getElementById('wh-sites-panel');
+    const searchEl = document.getElementById('wh-search');
+    const statsEl = document.getElementById('wh-stats');
+    if (!data || !countryListEl || !sitesPanelEl || !searchEl) return;
+
+    const order = data.order;
+    const countries = data.countries;
+    const totalSites = order.reduce((sum, c) => sum + (countries[c] ? countries[c].length : 0), 0);
+
+    let activeCountry = order[0];
+    let query = '';
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    function matchesQuery(text) {
+      if (!query) return true;
+      return text.toLowerCase().includes(query.toLowerCase());
+    }
+
+    function renderStats(visibleCountries, visibleSites) {
+      statsEl.textContent = query
+        ? `${visibleSites} موقع في ${visibleCountries} دولة`
+        : `${totalSites} موقع في ${order.length} دولة`;
+    }
+
+    function renderCountryList() {
+      const filtered = order.filter((c) => {
+        const countryMatch = matchesQuery(c);
+        const siteMatch = (countries[c] || []).some((s) => matchesQuery(s.name));
+        return countryMatch || siteMatch;
+      });
+
+      if (!filtered.includes(activeCountry)) {
+        activeCountry = filtered[0] || null;
+      }
+
+      if (filtered.length === 0) {
+        countryListEl.innerHTML = '<div class="wh-country-empty">لا توجد نتائج مطابقة</div>';
+      } else {
+        countryListEl.innerHTML = filtered.map((c) => {
+          const count = (countries[c] || []).length;
+          const isActive = c === activeCountry;
+          return `<button type="button" class="wh-country-btn${isActive ? ' active' : ''}" data-country="${escapeHtml(c)}" role="option" aria-selected="${isActive}">
+            <span>${escapeHtml(c)}</span>
+            <span class="wh-country-count">${count}</span>
+          </button>`;
+        }).join('');
+      }
+
+      const visibleSitesCount = filtered.reduce((sum, c) => sum + (countries[c] || []).length, 0);
+      renderStats(filtered.length, visibleSitesCount);
+    }
+
+    function renderSites() {
+      if (!activeCountry) {
+        sitesPanelEl.innerHTML = '<div class="wh-no-results">جرّب كلمة بحث مختلفة.</div>';
+        return;
+      }
+      const sites = (countries[activeCountry] || []).filter((s) => matchesQuery(activeCountry) || matchesQuery(s.name));
+      if (sites.length === 0) {
+        sitesPanelEl.innerHTML = '<div class="wh-no-results">لا توجد مواقع مطابقة لبحثك في هذه الدولة.</div>';
+        return;
+      }
+      sitesPanelEl.innerHTML = `
+        <div class="wh-sites-country-title">🌍 ${escapeHtml(activeCountry)}</div>
+        <div class="wh-sites-list">
+          ${sites.map((s) => `
+            <div class="wh-site-card">
+              <div class="wh-site-name">${escapeHtml(s.name)}</div>
+              <span class="wh-site-year">${escapeHtml(s.years)}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderAll() {
+      renderCountryList();
+      renderSites();
+    }
+
+    countryListEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.wh-country-btn');
+      if (!btn) return;
+      activeCountry = btn.dataset.country;
+      renderAll();
+    });
+
+    let searchDebounce = null;
+    searchEl.addEventListener('input', () => {
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(() => {
+        query = searchEl.value.trim();
+        renderAll();
+      }, 150);
+    });
+
+    renderAll();
   }
 
 })();

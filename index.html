@@ -91,6 +91,7 @@
   <div class="nav-links" id="nav-links">
     <a href="#wings" data-i18n="nav.wings">الأجنحة</a>
     <a href="#intangible-heritage">التراث اللامادي</a>
+    <a href="#world-heritage">تراث العالم</a>
     <a href="#timeline" data-i18n="nav.timeline">الخط الزمني الحي</a>
     <a href="#real-map" data-i18n="nav.realmap">خريطة المواقع الحقيقية</a>
     <a href="#compare" data-i18n="nav.compare">قارن بين حضارتين</a>
@@ -351,6 +352,38 @@
 </section>
 
 <!-- =====================================================================
+     5د) مواقع التراث العالمي حول العالم (UNESCO World Heritage Sites)
+     قسم مستقل تمامًا عن #intangible-heritage: هنا مواقع مادية (آثار، مدن،
+     حدائق طبيعية) من قائمة اليونسكو للتراث العالمي، مبوّبة حسب الدولة،
+     مصر والمنطقة العربية أولًا ثم باقي دول العالم أبجديًا.
+     المصدر: whc.unesco.org
+     ===================================================================== -->
+<section class="section" id="world-heritage">
+  <div class="container">
+    <div class="section-title reveal">
+      <span class="eyebrow">إرث الإنسانية جمعاء</span>
+      <h2>مواقع التراث العالمي حول العالم</h2>
+      <p>أكثر من 1300 موقع أثري وطبيعي مُدرَج في قائمة اليونسكو للتراث العالمي من 174 دولة — مصر أولًا، ثم باقي دول العالم.</p>
+    </div>
+
+    <div class="wh-toolbar">
+      <div class="wh-search-wrap">
+        <span class="wh-search-icon">🔍</span>
+        <input type="text" id="wh-search" class="wh-search" placeholder="ابحث عن دولة أو موقع...">
+      </div>
+      <div class="wh-stats" id="wh-stats"></div>
+    </div>
+
+    <div class="wh-layout">
+      <aside class="wh-countries" id="wh-country-list" role="listbox" aria-label="قائمة الدول"></aside>
+      <div class="wh-sites" id="wh-sites-panel"></div>
+    </div>
+
+    <p class="real-map-note" style="margin-top:20px;">المصدر: القائمة الرسمية لليونسكو للتراث العالمي (whc.unesco.org).</p>
+  </div>
+</section>
+
+<!-- =====================================================================
      6) الخط الزمني الحي (Living Timeline) + خريطة تفاعلية
      ===================================================================== -->
 <section class="section timeline-section" id="timeline">
@@ -399,6 +432,18 @@
     <div class="real-map-wrap reveal">
       <svg viewBox="0 0 300 180" id="real-map-svg" class="real-map-svg"></svg>
       <p class="real-map-note" data-i18n="realmap.note">إسقاط جغرافي مبسّط (Equirectangular) بإحداثيات تقريبية وليست دقيقة بالكامل.</p>
+    </div>
+
+    <div class="real-gmap-wrap reveal">
+      <h3 class="real-gmap-title">تصفّح المواقع على خرائط Google الحقيقية</h3>
+      <div class="real-gmap-chips" id="real-gmap-chips"></div>
+      <div class="real-gmap-frame-wrap">
+        <iframe id="real-gmap-frame" class="real-gmap-frame" title="خريطة Google للموقع الأثري المختار" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        <a href="#" target="_blank" rel="noopener" id="real-gmap-link" class="real-gmap-link">
+          فتح في خرائط Google
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M9 7h8v8"/></svg>
+        </a>
+      </div>
     </div>
   </div>
 </section>
@@ -508,6 +553,7 @@
       <ul class="footer-links">
         <li><a href="#wings" data-i18n="nav.wings">الأجنحة</a></li>
         <li><a href="#intangible-heritage">التراث اللامادي</a></li>
+        <li><a href="#world-heritage">تراث العالم</a></li>
         <li><a href="#sources">المصادر والمراجع</a></li>
         <li><a href="#" data-open-modal="about-modal" data-i18n="nav.about">عن المتحف</a></li>
         <li><a href="#" data-open-modal="privacy-modal">سياسة الخصوصية</a></li>
@@ -1033,6 +1079,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
 <script src="auth.js"></script>
+<script src="world-heritage-data.js"></script>
 <script src="features.js"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
