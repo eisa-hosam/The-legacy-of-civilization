@@ -477,8 +477,8 @@
 
   function drawFrameDecoration(ctx, w, h, frame) {
     const isEgypt = frame === 'egypt';
-    const gold = '#d4af37';
-    const goldLight = '#f3d97a';
+    const gold = '#1034a6';
+    const goldLight = '#3ecbe0';
     const ornament = isEgypt ? '𓂀' : '🏛️';
     const captionTitle = isEgypt ? '👑 حارس الحضارة — الجناح المصري' : '👑 حارس الحضارة — الجناح الروماني';
 

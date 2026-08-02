@@ -388,17 +388,17 @@ function downloadRestorationCertificate(username, itemTitle) {
   grad.addColorStop(0, "#041233"); grad.addColorStop(0.55, "#0b3d91"); grad.addColorStop(1, "#041233");
   c.fillStyle = grad; c.fillRect(0, 0, 1600, 1131);
 
-  c.strokeStyle = "#d4af37"; c.lineWidth = 6;
+  c.strokeStyle = "#1034a6"; c.lineWidth = 6;
   c.strokeRect(40, 40, 1520, 1051);
   c.lineWidth = 2;
   c.strokeRect(64, 64, 1472, 1003);
 
   c.textAlign = "center"; c.direction = "rtl";
 
-  c.fillStyle = "#f3d97a"; c.font = "600 30px Cairo, sans-serif";
+  c.fillStyle = "#3ecbe0"; c.font = "600 30px Cairo, sans-serif";
   c.fillText("متحف إرث الحضارة", 800, 175);
 
-  c.fillStyle = "#d4af37"; c.font = '700 60px "Reem Kufi", Amiri, serif';
+  c.fillStyle = "#1034a6"; c.font = '700 60px "Reem Kufi", Amiri, serif';
   c.fillText("🛠️ شهادة إنجاز ترميم", 800, 300);
 
   c.fillStyle = "rgba(255,255,255,.85)"; c.font = "400 30px Cairo, sans-serif";
@@ -414,20 +414,20 @@ function downloadRestorationCertificate(username, itemTitle) {
     800, 610, 1200, 42
   );
 
-  c.strokeStyle = "rgba(212,175,55,.5)"; c.lineWidth = 1;
+  c.strokeStyle = "rgba(16,52,166,.5)"; c.lineWidth = 1;
   c.beginPath(); c.moveTo(1050, 900); c.lineTo(1350, 900); c.stroke();
-  c.fillStyle = "#f3d97a"; c.font = "600 28px Cairo, sans-serif";
+  c.fillStyle = "#3ecbe0"; c.font = "600 28px Cairo, sans-serif";
   c.fillText("عيسى حسام", 1200, 945);
   c.fillStyle = "rgba(255,255,255,.7)"; c.font = "400 20px Cairo, sans-serif";
   c.fillText("مؤسس متحف إرث الحضارة", 1200, 975);
 
   c.beginPath(); c.moveTo(250, 900); c.lineTo(550, 900); c.stroke();
-  c.fillStyle = "#f3d97a"; c.font = "600 28px Cairo, sans-serif";
+  c.fillStyle = "#3ecbe0"; c.font = "600 28px Cairo, sans-serif";
   c.fillText(new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }), 400, 945);
   c.fillStyle = "rgba(255,255,255,.7)"; c.font = "400 20px Cairo, sans-serif";
   c.fillText("تاريخ الإصدار", 400, 975);
 
-  c.fillStyle = "#d4af37"; c.font = "500 22px Cairo, sans-serif";
+  c.fillStyle = "#1034a6"; c.font = "500 22px Cairo, sans-serif";
   c.fillText("🏛️ المتحف الرقمي التفاعلي — متحف إرث الحضارة", 800, 1060);
 
   canvas.toBlob((blob) => {
@@ -450,20 +450,20 @@ function shareBadgeImage(badge, username) {
   grad.addColorStop(0, "#0b3d91"); grad.addColorStop(0.6, "#041233"); grad.addColorStop(1, "#020a1f");
   c.fillStyle = grad; c.fillRect(0, 0, 1080, 1080);
 
-  c.strokeStyle = "#d4af37"; c.lineWidth = 8;
+  c.strokeStyle = "#1034a6"; c.lineWidth = 8;
   c.strokeRect(36, 36, 1008, 1008);
-  c.lineWidth = 2; c.strokeStyle = "rgba(212,175,55,.5)";
+  c.lineWidth = 2; c.strokeStyle = "rgba(16,52,166,.5)";
   c.strokeRect(58, 58, 964, 964);
 
   c.textAlign = "center"; c.direction = "rtl";
 
-  c.fillStyle = "#f3d97a"; c.font = "600 30px Cairo, sans-serif";
+  c.fillStyle = "#3ecbe0"; c.font = "600 30px Cairo, sans-serif";
   c.fillText("متحف إرث الحضارة", 540, 150);
 
   // دائرة ذهبية خلف الإيموجي
   c.beginPath(); c.arc(540, 400, 150, 0, Math.PI * 2);
   const badgeGlow = c.createRadialGradient(540, 400, 30, 540, 400, 150);
-  badgeGlow.addColorStop(0, "rgba(212,175,55,.35)"); badgeGlow.addColorStop(1, "rgba(212,175,55,0)");
+  badgeGlow.addColorStop(0, "rgba(16,52,166,.35)"); badgeGlow.addColorStop(1, "rgba(16,52,166,0)");
   c.fillStyle = badgeGlow; c.fill();
   c.font = "180px serif";
   c.fillText(badge.emoji || "🏅", 540, 470);
@@ -477,12 +477,12 @@ function shareBadgeImage(badge, username) {
   c.fillStyle = "rgba(255,255,255,.75)"; c.font = "400 26px Cairo, sans-serif";
   wrapRestoreCertText(c, badge.desc || "", 540, 740, 820, 38);
 
-  c.strokeStyle = "rgba(212,175,55,.5)"; c.lineWidth = 1;
+  c.strokeStyle = "rgba(16,52,166,.5)"; c.lineWidth = 1;
   c.beginPath(); c.moveTo(340, 870); c.lineTo(740, 870); c.stroke();
-  c.fillStyle = "#f3d97a"; c.font = "600 26px Cairo, sans-serif";
+  c.fillStyle = "#3ecbe0"; c.font = "600 26px Cairo, sans-serif";
   c.fillText(username || "زائر", 540, 915);
 
-  c.fillStyle = "#d4af37"; c.font = "500 22px Cairo, sans-serif";
+  c.fillStyle = "#1034a6"; c.font = "500 22px Cairo, sans-serif";
   c.fillText("🏛️ المتحف الرقمي التفاعلي — متحف إرث الحضارة", 540, 1000);
 
   canvas.toBlob((blob) => {

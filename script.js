@@ -1083,6 +1083,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const wingLeadersCardsBtn = document.getElementById('wing-leaders-cards-btn');
       if (wingLeadersCardsBtn) wingLeadersCardsBtn.style.display = (key === 'egypt') ? '' : 'none';
       openModal(wingModal);
+      document.dispatchEvent(new CustomEvent('museum:wingOpened', { detail: { key, data } }));
     });
   });
 
@@ -1103,7 +1104,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const placeholderPalettes = [
     ['#1c5fc4', '#041233'],
     ['#0b3d91', '#3b1f6b'],
-    ['#d4af37', '#0b3d91'],
+    ['#1034a6', '#0b3d91'],
   ];
   function placeholderImg(wingKey, variant){
     const emoji = wingEmoji[wingKey] || '𓂀';
@@ -1113,7 +1114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <stop offset='0' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/>
       </linearGradient></defs>
       <rect width='400' height='300' fill='url(#g)'/>
-      <text x='50%' y='54%' font-size='90' fill='#f3d97a' text-anchor='middle' dominant-baseline='middle'>${emoji}</text>
+      <text x='50%' y='54%' font-size='90' fill='#3ecbe0' text-anchor='middle' dominant-baseline='middle'>${emoji}</text>
     </svg>`;
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
   }
@@ -1134,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rect = originEl.getBoundingClientRect ? originEl.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0, height: 0 };
     const originX = rect.left + rect.width / 2;
     const originY = rect.top + rect.height / 2;
-    const colors = ['#d4af37', '#f3d97a', '#0b3d91', '#ffffff', '#b8860b'];
+    const colors = ['#1034a6', '#3ecbe0', '#0b3d91', '#ffffff', '#0b3d91'];
     for (let i = 0; i < (count || 12); i++) {
       const piece = document.createElement('span');
       piece.className = 'confetti-piece';
@@ -1199,7 +1200,7 @@ document.addEventListener('DOMContentLoaded', () => {
       navSearchResults.innerHTML = `<div class="search-no-results">مفيش نتائج لـ "${q}" 🔍</div>`;
     } else {
       navSearchResults.innerHTML = matches.map(m => {
-        const meta = (typeof WING_META !== 'undefined' && WING_META[m.wingKey]) ? WING_META[m.wingKey] : { name: m.wingKey, emoji: '⭐' };
+        const meta = (function(){ try { if (typeof WING_META !== 'undefined' && WING_META[m.wingKey]) return WING_META[m.wingKey]; } catch(e){} return { name: m.wingKey, emoji: '⭐' }; })();
         return `<button type="button" class="search-result-item" data-wing="${m.wingKey}" data-idx="${m.idx}">
           <span class="search-result-emoji">${meta.emoji}</span>
           <div class="search-result-body"><strong>${m.t}</strong><span>${meta.name}${m.d ? ' · ' + m.d : ''}</span></div>
@@ -1564,11 +1565,11 @@ document.addEventListener('DOMContentLoaded', () => {
         grad.addColorStop(0, '#123a7a'); grad.addColorStop(1, '#041233');
         c.fillStyle = grad; c.fillRect(0, 0, 1080, 1080);
 
-        c.strokeStyle = 'rgba(212,175,55,.55)'; c.lineWidth = 3;
+        c.strokeStyle = 'rgba(16,52,166,.55)'; c.lineWidth = 3;
         c.strokeRect(40, 40, 1000, 1000);
 
         c.textAlign = 'center'; c.direction = 'rtl';
-        c.fillStyle = '#d4af37'; c.font = '600 34px Cairo, sans-serif';
+        c.fillStyle = '#1034a6'; c.font = '600 34px Cairo, sans-serif';
         c.fillText('متحف إرث الحضارة', 540, 150);
 
         c.fillStyle = '#fff'; c.font = '700 52px Cairo, sans-serif';
@@ -1580,7 +1581,7 @@ document.addEventListener('DOMContentLoaded', () => {
         c.fillStyle = 'rgba(255,255,255,.85)'; c.font = '400 26px Cairo, sans-serif';
         wrapText(c, (item.i || '').slice(0, 140), 540, 700, 860, 38);
 
-        c.fillStyle = '#d4af37'; c.font = '500 24px Cairo, sans-serif';
+        c.fillStyle = '#1034a6'; c.font = '500 24px Cairo, sans-serif';
         c.fillText('🏛️ استكشف المزيد على متحف إرث الحضارة', 540, 970);
 
         canvas.toBlob((blob) => {
@@ -2446,7 +2447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { year:-1754, t:'شريعة حمورابي', d:'أول تقنين مكتوب شامل للقوانين في بابل، نُقش على مسلة حجرية ضخمة.' },
         { year:-612, t:'سقوط نينوى', d:'سقوط عاصمة الإمبراطورية الآشورية وبداية أفول نفوذها.' }
       ]},
-    { key:'egypt', name:'مصر القديمة', emoji:'𓂀', color:'#d4af37', start:-3100, end:-30, mapX:176, mapY:60,
+    { key:'egypt', name:'مصر القديمة', emoji:'𓂀', color:'#1034a6', start:-3100, end:-30, mapX:176, mapY:60,
       events:[
         { year:-2560, t:'بناء الهرم الأكبر', d:'اكتمال بناء هرم خوفو بالجيزة، أحد عجائب الدنيا السبع القديمة.' },
         { year:-1479, t:'حكم حتشبسوت', d:'تولّت حتشبسوت العرش بلقب فرعون وقادت حملات تجارية كبرى.' },
@@ -2531,9 +2532,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     if (timelineMapSvg) {
       let svgHtml = `
-        <ellipse cx="190" cy="75" rx="115" ry="58" fill="rgba(212,175,55,.12)"/>
-        <ellipse cx="105" cy="100" rx="55" ry="38" fill="rgba(212,175,55,.08)"/>
-        <ellipse cx="70" cy="90" rx="38" ry="65" fill="rgba(212,175,55,.1)"/>`;
+        <ellipse cx="190" cy="75" rx="115" ry="58" fill="rgba(16,52,166,.12)"/>
+        <ellipse cx="105" cy="100" rx="55" ry="38" fill="rgba(16,52,166,.08)"/>
+        <ellipse cx="70" cy="90" rx="38" ry="65" fill="rgba(16,52,166,.1)"/>`;
       timelineData.forEach(civ => {
         svgHtml += `
           <g class="timeline-map-pin-group" data-key="${civ.key}">
