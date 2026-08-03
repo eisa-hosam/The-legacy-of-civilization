@@ -379,17 +379,17 @@
     grad.addColorStop(0, '#041233'); grad.addColorStop(0.55, '#0b3d91'); grad.addColorStop(1, '#041233');
     c.fillStyle = grad; c.fillRect(0, 0, 1600, 1131);
 
-    c.strokeStyle = '#1034a6'; c.lineWidth = 6;
+    c.strokeStyle = '#d4af37'; c.lineWidth = 6;
     c.strokeRect(40, 40, 1520, 1051);
     c.lineWidth = 2;
     c.strokeRect(64, 64, 1472, 1003);
 
     c.textAlign = 'center'; c.direction = 'rtl';
 
-    c.fillStyle = '#3ecbe0'; c.font = '600 30px Cairo, sans-serif';
+    c.fillStyle = '#f3d97a'; c.font = '600 30px Cairo, sans-serif';
     c.fillText('متحف إرث الحضارة', 800, 175);
 
-    c.fillStyle = '#1034a6'; c.font = '700 64px "Reem Kufi", Amiri, serif';
+    c.fillStyle = '#d4af37'; c.font = '700 64px "Reem Kufi", Amiri, serif';
     c.fillText('شهادة تقدير', 800, 300);
 
     c.fillStyle = 'rgba(255,255,255,.85)'; c.font = '400 30px Cairo, sans-serif';
@@ -405,20 +405,20 @@
       800, 610, 1200, 42
     );
 
-    c.strokeStyle = 'rgba(16,52,166,.5)'; c.lineWidth = 1;
+    c.strokeStyle = 'rgba(212,175,55,.5)'; c.lineWidth = 1;
     c.beginPath(); c.moveTo(1050, 900); c.lineTo(1350, 900); c.stroke();
-    c.fillStyle = '#3ecbe0'; c.font = '600 28px Cairo, sans-serif';
+    c.fillStyle = '#f3d97a'; c.font = '600 28px Cairo, sans-serif';
     c.fillText('عيسى حسام', 1200, 945);
     c.fillStyle = 'rgba(255,255,255,.7)'; c.font = '400 20px Cairo, sans-serif';
     c.fillText('مؤسس متحف إرث الحضارة', 1200, 975);
 
     c.beginPath(); c.moveTo(250, 900); c.lineTo(550, 900); c.stroke();
-    c.fillStyle = '#3ecbe0'; c.font = '600 28px Cairo, sans-serif';
+    c.fillStyle = '#f3d97a'; c.font = '600 28px Cairo, sans-serif';
     c.fillText(new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }), 400, 945);
     c.fillStyle = 'rgba(255,255,255,.7)'; c.font = '400 20px Cairo, sans-serif';
     c.fillText('تاريخ الإصدار', 400, 975);
 
-    c.fillStyle = '#1034a6'; c.font = '500 22px Cairo, sans-serif';
+    c.fillStyle = '#d4af37'; c.font = '500 22px Cairo, sans-serif';
     c.fillText('🏛️ المتحف الرقمي التفاعلي — متحف إرث الحضارة', 800, 1060);
 
     canvas.toBlob((blob) => {
@@ -506,9 +506,9 @@
     const svg = document.getElementById('real-map-svg');
     if (!svg) return;
     const W = 300, H = 180;
-    let markup = `<rect x="0" y="0" width="${W}" height="${H}" fill="transparent" stroke="rgba(16,52,166,.18)" stroke-width="0.5"/>`;
-    for (let i = 1; i < 6; i++) markup += `<line x1="0" y1="${i * H / 6}" x2="${W}" y2="${i * H / 6}" stroke="rgba(16,52,166,.08)" stroke-width="0.3"/>`;
-    for (let i = 1; i < 12; i++) markup += `<line x1="${i * W / 12}" y1="0" x2="${i * W / 12}" y2="${H}" stroke="rgba(16,52,166,.08)" stroke-width="0.3"/>`;
+    let markup = `<rect x="0" y="0" width="${W}" height="${H}" fill="transparent" stroke="rgba(212,175,55,.18)" stroke-width="0.5"/>`;
+    for (let i = 1; i < 6; i++) markup += `<line x1="0" y1="${i * H / 6}" x2="${W}" y2="${i * H / 6}" stroke="rgba(212,175,55,.08)" stroke-width="0.3"/>`;
+    for (let i = 1; i < 12; i++) markup += `<line x1="${i * W / 12}" y1="0" x2="${i * W / 12}" y2="${H}" stroke="rgba(212,175,55,.08)" stroke-width="0.3"/>`;
 
     REAL_SITES.forEach(site => {
       const { x, y } = projectLatLng(site.lat, site.lng, W, H);

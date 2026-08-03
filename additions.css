@@ -41,7 +41,7 @@
   text-align:start; background:var(--white); border:1px solid var(--gold-soft);
   padding:8px 12px; border-radius:var(--radius-sm); font-size:.85rem; color:var(--blue-deep); transition:.2s;
 }
-.assistant-result-btn:hover{ border-color:var(--gold); background:rgba(16,52,166,.1); }
+.assistant-result-btn:hover{ border-color:var(--gold); background:rgba(212,175,55,.1); }
 
 .assistant-form{ display:flex; gap:8px; }
 .assistant-form input{
@@ -68,7 +68,7 @@
   background:var(--white); border:1px solid var(--gold-soft); border-radius:var(--radius-sm);
   padding:12px 14px; transition:.25s;
 }
-.path-step:hover{ border-color:var(--gold); background:rgba(16,52,166,.08); transform:translateX(-2px); }
+.path-step:hover{ border-color:var(--gold); background:rgba(212,175,55,.08); transform:translateX(-2px); }
 .path-step-num{
   flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--blue-deep); color:var(--gold-light);
   display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.85rem;
@@ -92,7 +92,7 @@
 .lesson-card{ max-height:340px; overflow-y:auto; padding:2px 2px 4px; }
 .lesson-meta{ display:flex; gap:8px; margin-bottom:12px; }
 .lesson-badge{
-  background:rgba(16,52,166,.15); border:1px solid var(--gold-soft); color:var(--blue-deep);
+  background:rgba(212,175,55,.15); border:1px solid var(--gold-soft); color:var(--blue-deep);
   padding:5px 12px; border-radius:999px; font-size:.78rem; font-weight:700;
 }
 .lesson-card h4{ color:var(--blue-deep); font-size:.95rem; margin:14px 0 6px; }
@@ -105,7 +105,7 @@
 .events-modal-box{ max-width:520px; }
 .event-item{
   display:flex; gap:14px; align-items:flex-start; padding:14px 0;
-  border-bottom:1px solid rgba(16,52,166,.25);
+  border-bottom:1px solid rgba(212,175,55,.25);
 }
 .event-item:last-child{ border-bottom:none; }
 .event-icon{ font-size:1.5rem; flex-shrink:0; }
@@ -126,3 +126,50 @@
   #teacher-modal .teacher-actions{ display:none !important; }
   .lesson-card{ max-height:none !important; overflow:visible !important; }
 }
+
+/* ---------- بيانات مفتوحة ---------- */
+.open-data-modal-box{ max-width:460px; }
+.open-data-points{ margin:14px 0 18px; padding-inline-start:20px; display:flex; flex-direction:column; gap:6px; }
+.open-data-points li{ font-size:.88rem; color:var(--ink); line-height:1.6; }
+
+/* ---------- كتالوج جناح ---------- */
+.wing-catalog-modal-box{ max-width:440px; }
+.wing-catalog-select{
+  width:100%; padding:11px 14px; border-radius:var(--radius-sm); border:1px solid var(--gold-soft);
+  background:var(--white); color:var(--ink); font-family:var(--font-body); font-size:.9rem; margin:14px 0;
+}
+.modal-hint{ margin-top:12px !important; font-size:.78rem !important; color:var(--ink-soft, #666); }
+
+/* ---------- شهادة إتمام الرحلة ---------- */
+.completion-cert-modal-box{ max-width:480px; }
+.cert-msg{ font-size:.92rem; line-height:1.7; margin:14px 0; color:var(--ink); }
+.cert-success{ color:var(--blue-deep); font-weight:800; }
+.cert-wings-progress{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+.cert-wing-chip{
+  font-size:.8rem; padding:6px 12px; border-radius:999px; background:rgba(11,61,145,.07);
+  border:1px solid var(--gold-soft); color:var(--ink-soft, #4a4330);
+}
+.cert-wing-chip.done{ background:rgba(212,175,55,.18); color:var(--blue-deep); font-weight:700; border-color:var(--gold); }
+
+/* ---------- قصص الزوار ---------- */
+.stories-modal-box{ max-width:520px; }
+.story-form{ display:flex; flex-direction:column; gap:8px; margin:14px 0; }
+.story-form input, .story-form textarea{
+  padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--gold-soft);
+  background:var(--white); color:var(--ink); font-family:var(--font-body); font-size:.88rem; resize:vertical;
+}
+.story-form-foot{ display:flex; align-items:center; justify-content:space-between; }
+.story-counter{ font-size:.76rem; color:var(--ink-soft, #888); }
+.story-form-status{ font-size:.82rem; color:var(--blue-royal); min-height:1.2em; }
+.stories-divider{ height:1px; background:var(--gold-soft); margin:16px 0; }
+.stories-feed{ max-height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
+.stories-empty{ font-size:.85rem; color:var(--ink-soft, #888); text-align:center; padding:10px; }
+.story-card{
+  background:var(--sand, #f2e8cf); border:1px solid var(--gold-soft); border-radius:var(--radius-sm); padding:12px 14px;
+}
+.story-head{ display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap; }
+.story-head strong{ font-size:.88rem; color:var(--blue-deep); }
+.story-city{ font-size:.78rem; color:var(--ink-soft, #666); }
+.story-pending{ font-size:.7rem; background:rgba(212,175,55,.25); padding:2px 8px; border-radius:999px; color:var(--blue-deep); font-weight:700; }
+.story-text{ font-size:.86rem; line-height:1.6; color:var(--ink); white-space:pre-wrap; }
+.story-approve-btn{ margin-top:8px; }

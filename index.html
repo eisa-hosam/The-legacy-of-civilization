@@ -25,7 +25,6 @@
 <link rel="stylesheet" href="features.css">
 <link rel="stylesheet" href="mission-game.css">
 <link rel="stylesheet" href="additions.css">
-<link rel="stylesheet" href="community-features.css">
 </head>
 <body>
 <!-- =====================================================================
@@ -519,130 +518,6 @@
 <!-- =====================================================================
      8ب) المصادر والمراجع (Sources & References)
      ===================================================================== -->
-<!-- =====================================================================
-     قصص من مجتمعات محلية — مساحة يشارك فيها الزوار قصة عن تراث عائلتهم
-     أو منطقتهم. القصص تُخزَّن وتُعرض فعليًا لكل زوار المتحف عبر Firestore
-     (نفس مشروع Firebase المستخدم في auth.js)، والصور عبر Firebase Storage.
-     ===================================================================== -->
-<section class="section" id="community-stories">
-  <div class="container">
-    <div class="section-title reveal">
-      <span class="eyebrow">صوت المجتمع</span>
-      <h2 data-i18n="community.title">قصص من مجتمعات محلية</h2>
-      <p data-i18n="community.sub">المتحف مش بس عرض من فوق لتحت — شاركنا قصة عن تراث عائلتك أو منطقتك، بالكلمة أو بصورة بسيطة، وخليها جزء من رحلة المتحف.</p>
-    </div>
-
-    <div class="community-actions reveal">
-      <button class="btn btn-gold" id="community-add-btn" data-open-modal="community-modal" data-i18n="community.addBtn">شارك قصتك</button>
-      <span class="community-note" data-i18n="community.localNote">القصص المنشورة هنا تظهر لكل زوار المتحف.</span>
-    </div>
-
-    <div class="wings-grid community-grid" id="community-stories-grid"></div>
-  </div>
-</section>
-
-<!-- نافذة مشاركة قصة مجتمعية -->
-<div class="modal-overlay" id="community-modal">
-  <div class="modal-box">
-    <button class="modal-close">✕</button>
-    <span class="modal-tag" data-i18n="community.formTag">شارك قصتك</span>
-    <h3 data-i18n="community.formTitle">قصة عن تراث عائلتك أو منطقتك</h3>
-    <form id="community-form" class="community-form">
-      <label data-i18n="community.nameLabel">اسمك</label>
-      <input type="text" id="community-name" required maxlength="60">
-      <label data-i18n="community.regionLabel">منطقتك أو بلدك</label>
-      <input type="text" id="community-region" required maxlength="60">
-      <label data-i18n="community.storyLabel">قصتك (فقرة قصيرة)</label>
-      <textarea id="community-text" required maxlength="700" rows="5"></textarea>
-      <label data-i18n="community.imageLabel">صورة بسيطة (اختياري)</label>
-      <input type="file" id="community-image" accept="image/*">
-      <button type="submit" class="btn btn-gold" data-i18n="community.submitBtn">نشر القصة</button>
-    </form>
-  </div>
-</div>
-
-<!-- =====================================================================
-     بيانات مفتوحة (Open Data) — تصدير محتوى المتحف لاستخدام الباحثين
-     والمعلمين، بما يدعم مبدأ "التعليم المفتوح".
-     ===================================================================== -->
-<section class="section" id="open-data">
-  <div class="container">
-    <div class="section-title reveal">
-      <span class="eyebrow">تعليم مفتوح</span>
-      <h2 data-i18n="opendata.title">بيانات المتحف المفتوحة</h2>
-      <p data-i18n="opendata.sub">كل بيانات الأجنحة والقطع الأثرية (800 قطعة) متاحة كملف مفتوح لأي باحث أو معلم أو مطوّر، برخصة CC BY 4.0.</p>
-    </div>
-
-    <div class="opendata-grid reveal">
-      <div class="otd-card">
-        <div class="otd-icon">🗂️</div>
-        <div>
-          <span class="otd-date" data-i18n="opendata.jsonTitle">ملف JSON كامل</span>
-          <div class="otd-text" data-i18n="opendata.jsonDesc">كل الأجنحة، مقارنة الحضارات، وكل القطع الأثرية بتفاصيلها.</div>
-          <a class="btn btn-line" href="open-data.json" download data-i18n="opendata.downloadJson">تحميل open-data.json</a>
-        </div>
-      </div>
-      <div class="otd-card">
-        <div class="otd-icon">📊</div>
-        <div>
-          <span class="otd-date" data-i18n="opendata.csvTitle">ملف CSV مبسّط</span>
-          <div class="otd-text" data-i18n="opendata.csvDesc">جدول بكل القطع الأثرية، يفتح مباشرة في إكسل أو Google Sheets.</div>
-          <a class="btn btn-line" href="open-data-artifacts.csv" download data-i18n="opendata.downloadCsv">تحميل open-data-artifacts.csv</a>
-        </div>
-      </div>
-      <div class="otd-card">
-        <div class="otd-icon">📜</div>
-        <div>
-          <span class="otd-date" data-i18n="opendata.licenseTitle">الترخيص والاستخدام</span>
-          <div class="otd-text" data-i18n="opendata.licenseDesc">رخصة CC BY 4.0 — استخدام حر مع ذكر متحف إرث الحضارة كمصدر. البيانات ثابتة (Static) وتُحدَّث مع كل نسخة من الموقع.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =====================================================================
-     قياس الأثر — إحصائيات حقيقية مُجمَّعة من كل زوار المتحف عبر Firestore
-     (museum_impact_stats/global في community-features.js)، بالإضافة
-     لرحلة الزائر الشخصية (محلية على جهازه) وشهادة إتمام الرحلة.
-     ===================================================================== -->
-<section class="section" id="impact-stats">
-  <div class="container">
-    <div class="section-title reveal">
-      <span class="eyebrow">قياس الأثر</span>
-      <h2 data-i18n="impact.title">المتحف بالأرقام الحقيقية</h2>
-      <p data-i18n="impact.sub" id="impact-sub">أرقام مجمّعة فعليًا من كل زوار المتحف (وليست تقديرية)، بالإضافة لرحلتك الشخصية.</p>
-    </div>
-
-    <div class="impact-grid reveal">
-      <div class="impact-card">
-        <div class="impact-num" id="impact-visits">…</div>
-        <div class="impact-label" data-i18n="impact.visits">إجمالي زيارات المتحف</div>
-      </div>
-      <div class="impact-card">
-        <div class="impact-num" id="impact-country">…</div>
-        <div class="impact-label" data-i18n="impact.country">عدد الدول اللي دخلت المتحف</div>
-      </div>
-      <div class="impact-card">
-        <div class="impact-num" id="impact-teacher">…</div>
-        <div class="impact-label" data-i18n="impact.teacher">طلاب استخدموا وضع المعلم</div>
-      </div>
-      <div class="impact-card impact-card-personal">
-        <div class="impact-num" id="impact-wings">0/6</div>
-        <div class="impact-label" data-i18n="impact.wings">رحلتك الشخصية: أجنحة استكشفتها</div>
-      </div>
-    </div>
-
-    <div class="certificate-box reveal" id="certificate-box">
-      <p id="certificate-status" data-i18n="impact.certLocked">استكشف كل الأجنحة الستة الرئيسية عشان تفتح شهادة إتمام الرحلة.</p>
-      <div class="certificate-form" id="certificate-form" style="display:none;">
-        <input type="text" id="certificate-name" placeholder="اكتب اسمك للشهادة" data-i18n-placeholder="impact.certNamePlaceholder">
-        <button class="btn btn-gold" id="certificate-download-btn" data-i18n="impact.certDownload">حمّل شهادتك</button>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="section" id="sources" style="padding-top:0;">
   <div class="container">
     <div class="section-title reveal">
@@ -688,9 +563,6 @@
         <li><a href="#wings" data-i18n="nav.wings">الأجنحة</a></li>
         <li><a href="#intangible-heritage">التراث اللامادي</a></li>
         <li><a href="#world-heritage">تراث العالم</a></li>
-        <li><a href="#community-stories" data-i18n="community.title">قصص من مجتمعات محلية</a></li>
-        <li><a href="#open-data" data-i18n="opendata.title">بيانات المتحف المفتوحة</a></li>
-        <li><a href="#impact-stats" data-i18n="impact.title">رحلتك في المتحف</a></li>
         <li><a href="#sources">المصادر والمراجع</a></li>
         <li><a href="#" data-open-modal="about-modal" data-i18n="nav.about">عن المتحف</a></li>
         <li><a href="#" data-open-modal="privacy-modal">سياسة الخصوصية</a></li>
@@ -743,14 +615,6 @@
         <svg width="18" height="18" viewBox="0 0 64 64"><use href="#hg-star"></use></svg>
         العب واختبر معلوماتك عن الحضارة
       </button>
-      <button class="btn btn-line gallery-open-btn" id="wing-pdf-btn" data-i18n-title="wingpdf.btnTitle" title="نسخة PDF للجناح تصلح للطباعة أو الاستخدام بدون إنترنت">
-        <svg width="18" height="18" viewBox="0 0 64 64"><use href="#hg-feather"></use></svg>
-        <span data-i18n="wingpdf.btn">تحميل الجناح PDF</span>
-      </button>
-    </div>
-    <div class="wing-signlang-note" id="wing-signlang-note">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v4a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/><path d="M6 12v1a6 6 0 0 0 12 0v-1"/><path d="M12 19v3"/></svg>
-      <span data-i18n="signlang.wingNote">فيديوهات لغة الإشارة لأبرز قطع هذا الجناح قيد الإعداد بالتعاون مع مترجمين متخصصين.</span>
     </div>
   </div>
 </div>
@@ -1232,6 +1096,10 @@
   <button class="fab" id="learning-path-trigger-btn" data-open-modal="learning-path-modal" aria-label="مسار الزيارة المقترح" title="مش عارف تبدأ منين؟">🧭</button>
   <button class="fab" id="teacher-mode-trigger-btn" data-open-modal="teacher-modal" aria-label="وضع المعلم" title="خطط دروس للمعلمين">🎓</button>
   <button class="fab" id="events-trigger-btn" data-open-modal="events-modal" aria-label="جدول الفعاليات" title="فعاليات المتحف">📅</button>
+  <button class="fab" id="open-data-trigger-btn" data-open-modal="open-data-modal" aria-label="بيانات مفتوحة" title="بيانات مفتوحة">🗂️</button>
+  <button class="fab" id="wing-catalog-trigger-btn" data-open-modal="wing-catalog-modal" aria-label="كتالوج جناح للتحميل" title="حمّل كتالوج جناح">📥</button>
+  <button class="fab" id="completion-cert-trigger-btn" data-open-modal="completion-cert-modal" aria-label="شهادة إتمام الرحلة" title="شهادة إتمام الرحلة">🏅</button>
+  <button class="fab" id="stories-trigger-btn" data-open-modal="stories-modal" aria-label="قصص الزوار" title="شارك قصتك">✍️</button>
 </div>
 
 <!-- =====================================================================
@@ -1365,6 +1233,83 @@
   </div>
 </div>
 
+<!-- =====================================================================
+     بيانات مفتوحة (Open Data)
+     ===================================================================== -->
+<div class="modal-overlay" id="open-data-modal">
+  <div class="modal-box open-data-modal-box">
+    <button class="modal-close">✕</button>
+    <h3>🗂️ بيانات مفتوحة</h3>
+    <p>كل بيانات القطع الأثرية ومواقع التراث العالمي في المتحف متاحة كملف JSON مفتوح، للاستخدام التعليمي والبحثي.</p>
+    <ul class="open-data-points">
+      <li>٨٠٠ قطعة أثرية موزّعة على ٨ أقسام</li>
+      <li>بيانات مواقع التراث العالمي حسب الدولة</li>
+      <li>ملف JSON واحد، سهل القراءة والاستخدام</li>
+    </ul>
+    <button type="button" class="btn btn-gold" id="open-data-download-btn">⬇️ حمّل البيانات (JSON)</button>
+  </div>
+</div>
+
+<!-- =====================================================================
+     كتالوج جناح للتحميل (Wing Catalog PDF)
+     ===================================================================== -->
+<div class="modal-overlay" id="wing-catalog-modal">
+  <div class="modal-box wing-catalog-modal-box">
+    <button class="modal-close">✕</button>
+    <h3>📥 حمّل كتالوج جناح</h3>
+    <p>اختار جناح، وهنجهّزلك صفحة قابلة للطباعة أو الحفظ كـ PDF بكل قطعه.</p>
+    <select id="wing-catalog-select" class="wing-catalog-select">
+      <option value="egypt">مصر القديمة</option>
+      <option value="mesopotamia">بلاد الرافدين</option>
+      <option value="greek">الحضارة اليونانية</option>
+      <option value="roman">الحضارة الرومانية</option>
+      <option value="islamic">الحضارة الإسلامية</option>
+      <option value="world">حضارات العالم</option>
+      <option value="paintings">اللوحات والفنون</option>
+      <option value="leaders">الملوك والحكام</option>
+    </select>
+    <button type="button" class="btn btn-gold" id="wing-catalog-open-btn">🖨️ جهّز الكتالوج</button>
+    <p class="modal-hint">هتفتح نافذة جديدة فيها حوار الطباعة — اختار "حفظ كـ PDF" كوجهة الطباعة لو حابب تنزّله كملف.</p>
+  </div>
+</div>
+
+<!-- =====================================================================
+     شهادة إتمام الرحلة (Completion Certificate)
+     ===================================================================== -->
+<div class="modal-overlay" id="completion-cert-modal">
+  <div class="modal-box completion-cert-modal-box">
+    <button class="modal-close">✕</button>
+    <h3>🏅 شهادة إتمام الرحلة</h3>
+    <p>زُر قطعة واحدة على الأقل من كل الأجنحة الستة الرئيسية عشان تفتح شهادتك.</p>
+    <div id="completion-cert-content"></div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     قصص الزوار (Community Stories)
+     ===================================================================== -->
+<div class="modal-overlay" id="stories-modal">
+  <div class="modal-box stories-modal-box">
+    <button class="modal-close">✕</button>
+    <h3>✍️ قصص من زوار المتحف</h3>
+    <p>شارك قصة قصيرة عن تراثك الشخصي أو العائلي، أو قصة عن حضارة بتحبها.</p>
+    <form id="story-form" class="story-form">
+      <input type="text" id="story-name" placeholder="اسمك (اختياري)" maxlength="60">
+      <input type="text" id="story-city" placeholder="مدينتك أو بلدك (اختياري)" maxlength="60">
+      <textarea id="story-text" placeholder="اكتب قصتك هنا..." rows="4" maxlength="500"></textarea>
+      <div class="story-form-foot">
+        <span id="story-counter" class="story-counter">0/500</span>
+        <button type="submit" class="btn btn-gold btn-sm">شارك قصتك</button>
+      </div>
+      <p id="story-form-status" class="story-form-status"></p>
+    </form>
+    <div class="stories-divider"></div>
+    <div id="stories-feed" class="stories-feed">
+      <p class="stories-empty">دوسّ على الزرار العائم تاني عشان تشوف القصص المنشورة.</p>
+    </div>
+  </div>
+</div>
+
 <script src="script.js"></script>
 <script src="i18n.js"></script>
 
@@ -1373,7 +1318,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
 <script src="auth.js"></script>
 <script src="world-heritage-data.js"></script>
 <script src="features.js"></script>
@@ -1382,7 +1326,10 @@
 <script src="assistant.js"></script>
 <script src="learning-path.js"></script>
 <script src="teacher-mode.js"></script>
-<script src="community-features.js"></script>
+<script src="open-data.js"></script>
+<script src="wing-catalog.js"></script>
+<script src="completion-certificate.js"></script>
+<script src="community-stories.js"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', () => {

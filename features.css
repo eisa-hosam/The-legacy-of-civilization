@@ -51,7 +51,7 @@ html.theme-light .footer-links a{ color:#33455e; }
 .otd-section{ padding-top:0; }
 .otd-card{
   max-width:760px; margin-inline:auto; padding:26px 28px; border-radius:18px;
-  background:rgba(255,255,255,.04); border:1px solid rgba(16,52,166,.25);
+  background:rgba(255,255,255,.04); border:1px solid rgba(212,175,55,.25);
   display:flex; gap:18px; align-items:flex-start;
 }
 .otd-icon{ font-size:2rem; flex:none; line-height:1; }
@@ -60,31 +60,26 @@ html.theme-light .footer-links a{ color:#33455e; }
 .otd-text ul{ margin:0; padding-inline-start:22px; display:flex; flex-direction:column; gap:8px; }
 .otd-text ul li{ font-size:.95rem; }
 
-/* قسم "بيانات المتحف المفتوحة" (#open-data) خلفيته فاتحة زي باقي الصفحة (مش خلفية زرقاء غامقة
-   زي باقي أقسام otd)، فلون النص الذهبي/الرملي الفاتح كان بيختفي فوقها. نستبدله بأزرق غامق واضح. */
-#open-data .otd-date{ color:var(--blue-royal); }
-#open-data .otd-text{ color:#1c3a63; }
-
 /* ---------- 5) تحدي اليوم ولوحة الصدارة ---------- */
 .daily-card{
   max-width:760px; margin-inline:auto; padding:28px; border-radius:18px;
-  background:rgba(255,255,255,.04); border:1px solid rgba(16,52,166,.25);
+  background:rgba(255,255,255,.04); border:1px solid rgba(212,175,55,.25);
 }
 .daily-q{ font-size:1.1rem; margin-bottom:18px; line-height:1.8; }
 .daily-options{ display:grid; gap:10px; margin-bottom:16px; }
 .daily-opt{
   text-align:right; padding:12px 16px; border-radius:12px;
-  border:1px solid rgba(16,52,166,.3); background:rgba(255,255,255,.03);
+  border:1px solid rgba(212,175,55,.3); background:rgba(255,255,255,.03);
   color:var(--white,#fff); transition:background .2s, border-color .2s;
 }
-.daily-opt:hover{ background:rgba(16,52,166,.12); }
+.daily-opt:hover{ background:rgba(212,175,55,.12); }
 .daily-opt.correct{ border-color:#3fbf6f; background:rgba(63,191,111,.18); }
 .daily-opt.wrong{ border-color:#e0576b; background:rgba(224,87,107,.18); }
 .daily-opt[disabled]{ pointer-events:none; opacity:.85; }
 .daily-explain{ font-size:.9rem; color:var(--sand); margin-bottom:16px; display:none; }
 .daily-explain.show{ display:block; }
 .daily-done{ font-size:.9rem; color:var(--gold-light); }
-.daily-leaderboard{ margin-top:22px; padding-top:18px; border-top:1px dashed rgba(16,52,166,.3); }
+.daily-leaderboard{ margin-top:22px; padding-top:18px; border-top:1px dashed rgba(212,175,55,.3); }
 .daily-leaderboard h4{ font-size:.95rem; margin-bottom:12px; color:var(--gold-light); }
 .daily-lb-row{
   display:flex; justify-content:space-between; padding:7px 0;
@@ -93,7 +88,7 @@ html.theme-light .footer-links a{ color:#33455e; }
 .daily-lb-row .rank{ color:var(--gold); font-weight:700; width:26px; }
 
 /* ---------- 5ب) بطل الأسبوع وشهادة التقدير ---------- */
-.weekly-champion{ margin-top:22px; padding-top:18px; border-top:1px dashed rgba(16,52,166,.3); }
+.weekly-champion{ margin-top:22px; padding-top:18px; border-top:1px dashed rgba(212,175,55,.3); }
 .weekly-champion h4{ font-size:.95rem; margin-bottom:12px; color:var(--gold-light); }
 .weekly-champion-card{ text-align:center; padding:14px 10px; }
 .weekly-champion-crown{ font-size:2rem; margin-bottom:6px; }
@@ -105,7 +100,7 @@ html.theme-light .footer-links a{ color:#33455e; }
 /* ---------- 6) خريطة المواقع الحقيقية ---------- */
 .real-map-wrap{
   border-radius:18px; padding:18px; background:rgba(255,255,255,.03);
-  border:1px solid rgba(16,52,166,.2);
+  border:1px solid rgba(212,175,55,.2);
 }
 .real-map-svg{ width:100%; height:auto; display:block; }
 .real-map-dot{ cursor:pointer; outline:none; }
@@ -123,7 +118,7 @@ html.theme-light .footer-links a{ color:#33455e; }
 /* ---------- 12) خريطة Google الحقيقية التفاعلية ---------- */
 .real-gmap-wrap{
   border-radius:18px; padding:18px; margin-top:22px;
-  background:rgba(255,255,255,.03); border:1px solid rgba(16,52,166,.2);
+  background:rgba(255,255,255,.03); border:1px solid rgba(212,175,55,.2);
 }
 .real-gmap-title{
   font-size:1.05rem; font-weight:700; margin-bottom:14px; color:var(--gold-light);
@@ -137,7 +132,7 @@ html.theme-light .footer-links a{ color:#33455e; }
   background:rgba(255,255,255,.04); color:inherit; font-family:inherit; font-size:.85rem;
   cursor:pointer; transition:background .25s, color .25s, transform .2s;
 }
-.real-gmap-chip:hover{ background:rgba(16,52,166,.12); transform:translateY(-2px); }
+.real-gmap-chip:hover{ background:rgba(212,175,55,.12); transform:translateY(-2px); }
 .real-gmap-chip.active{
   background:linear-gradient(90deg, var(--gold-soft), transparent);
   color:var(--gold-light); font-weight:700; border-color:var(--gold);
@@ -177,7 +172,7 @@ html.theme-light .footer-links a{ color:#33455e; }
 .item-rating-stars{ display:flex; gap:4px; direction:ltr; }
 .item-rating-stars .star-btn{
   background:none; border:none; cursor:pointer; font-size:1.5rem; line-height:1;
-  color:rgba(16,52,166,.3); padding:2px; transition:transform .15s, color .15s;
+  color:rgba(212,175,55,.3); padding:2px; transition:transform .15s, color .15s;
 }
 .item-rating-stars .star-btn:hover{ transform:scale(1.15); }
 .item-rating-stars .star-btn.filled{ color:var(--gold); }
@@ -266,7 +261,7 @@ html.theme-light .weekly-empty{ color:#0b1c33; }
 
 .logo-orbit-dot{
   position:absolute; top:50%; left:50%; width:6px; height:6px; margin:-3px 0 0 -3px;
-  border-radius:50%; background:var(--gold); box-shadow:0 0 8px 2px rgba(16,52,166,.75);
+  border-radius:50%; background:var(--gold); box-shadow:0 0 8px 2px rgba(212,175,55,.75);
   animation:logo-orbit-travel 6s linear infinite;
   z-index:1;
 }
@@ -294,13 +289,13 @@ html.theme-light .weekly-empty{ color:#0b1c33; }
 .nav-lang{ position:relative; }
 .nav-lang-btn{
   display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.06);
-  border:1px solid rgba(16,52,166,.3); color:var(--white,#fff); border-radius:999px;
+  border:1px solid rgba(212,175,55,.3); color:var(--white,#fff); border-radius:999px;
   padding:6px 12px; cursor:pointer; font-size:.85rem; font-weight:700;
 }
-.nav-lang-btn:hover{ background:rgba(16,52,166,.15); }
+.nav-lang-btn:hover{ background:rgba(212,175,55,.15); }
 .nav-lang-menu{
   position:absolute; top:calc(100% + 8px); inset-inline-end:0; min-width:150px;
-  background:var(--blue-royal,#0b1c33); border:1px solid rgba(16,52,166,.3);
+  background:var(--blue-royal,#0b1c33); border:1px solid rgba(212,175,55,.3);
   border-radius:14px; padding:6px; display:none; flex-direction:column; gap:2px;
   box-shadow:0 14px 34px -14px rgba(0,0,0,.5); z-index:80;
 }
@@ -309,7 +304,7 @@ html.theme-light .weekly-empty{ color:#0b1c33; }
   text-align:start; background:none; border:none; color:var(--white,#fff);
   padding:9px 12px; border-radius:9px; cursor:pointer; font-size:.9rem;
 }
-.nav-lang-opt:hover{ background:rgba(16,52,166,.15); }
+.nav-lang-opt:hover{ background:rgba(212,175,55,.15); }
 .nav-lang-opt.active{ color:var(--gold-light); font-weight:700; }
 html.theme-light .nav-lang-btn{ color:#0b1c33; border-color:rgba(11,61,145,.25); }
 html.theme-light .nav-lang-menu{ background:#fff; }
@@ -321,7 +316,7 @@ html.theme-light .nav-lang-opt{ color:#0b1c33; }
 .suggestion-box-sub{ color:var(--ink-soft); font-size:.9rem; margin-bottom:18px; line-height:1.7; }
 .suggestion-login-required{
   display:none; text-align:center; padding:22px 14px; border-radius:14px;
-  background:rgba(16,52,166,.08); border:1px dashed rgba(16,52,166,.35);
+  background:rgba(212,175,55,.08); border:1px dashed rgba(212,175,55,.35);
 }
 .suggestion-login-required p{ color:var(--ink-soft); font-size:.92rem; margin-bottom:16px; line-height:1.8; }
 .suggestion-as{ font-size:.85rem; color:var(--ink-soft); margin-bottom:12px; }
@@ -383,7 +378,7 @@ html.theme-light .nav-lang-opt{ color:#0b1c33; }
   display:flex; align-items:center; justify-content:center; cursor:pointer;
   backdrop-filter:blur(4px);
 }
-.ar-icon-btn:hover{ background:rgba(16,52,166,.35); }
+.ar-icon-btn:hover{ background:rgba(212,175,55,.35); }
 .ar-title{
   color:#fff; font-size:.95rem; font-weight:700; text-align:center;
   flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
@@ -393,7 +388,7 @@ html.theme-light .nav-lang-opt{ color:#0b1c33; }
   position:absolute; bottom:22px; inset-inline:16px; z-index:2;
   background:rgba(0,0,0,.55); color:#fff; text-align:center; padding:12px 16px;
   border-radius:14px; font-size:.85rem; line-height:1.8; backdrop-filter:blur(4px);
-  border:1px solid rgba(16,52,166,.35);
+  border:1px solid rgba(212,175,55,.35);
 }
 .ar-error{
   position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
@@ -445,7 +440,7 @@ html.theme-light .nav-lang-opt{ color:#0b1c33; }
   background:transparent; color:inherit; cursor:pointer; font-family:inherit; font-size:.92rem;
   transition:background .25s, color .25s;
 }
-.wh-country-btn:hover{ background:rgba(16,52,166,.12); }
+.wh-country-btn:hover{ background:rgba(212,175,55,.12); }
 .wh-country-btn.active{
   background:linear-gradient(90deg, var(--gold-soft), transparent);
   color:var(--gold-light); font-weight:700;
@@ -454,7 +449,7 @@ html.theme-light .nav-lang-opt{ color:#0b1c33; }
   font-size:.75rem; opacity:.65; background:rgba(255,255,255,.08);
   border-radius:999px; padding:2px 9px; min-width:26px; text-align:center;
 }
-.wh-country-btn.active .wh-country-count{ background:rgba(16,52,166,.25); opacity:1; }
+.wh-country-btn.active .wh-country-count{ background:rgba(212,175,55,.25); opacity:1; }
 .wh-country-empty{ padding:14px; text-align:center; opacity:.6; font-size:.85rem; }
 
 .wh-sites{ min-height:200px; }
