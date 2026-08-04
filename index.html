@@ -17,6 +17,20 @@
 <meta name="twitter:description" content="رحلة تفاعلية عبر تاريخ الإنسانية.. أجنحة، خط زمني حي، ولعبة تعلّم اللغات القديمة.">
 <meta name="twitter:image" content="logo.png">
 <meta name="theme-color" content="#0b3d91">
+<!-- ملاحظة: og:url وصورة og:image بحاجة لرابط الدومين الفعلي للمتحف بعد النشر عشان تشتغل صح في المعاينات -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Museum",
+  "name": "متحف إرث الحضارة",
+  "alternateName": "The Digital Heritage Museum",
+  "description": "متحف رقمي تفاعلي يجمع كنوز مصر القديمة وحضارات العالم، مع واقع معزز، ألعاب تفاعلية، وخط زمني حي.",
+  "image": "logo.png",
+  "isAccessibleForFree": true,
+  "inLanguage": ["ar", "en", "fr", "es", "de"],
+  "publicAccess": true
+}
+</script>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="logo.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -566,7 +580,17 @@
         <li><a href="#sources">المصادر والمراجع</a></li>
         <li><a href="#" data-open-modal="about-modal" data-i18n="nav.about">عن المتحف</a></li>
         <li><a href="#" data-open-modal="privacy-modal">سياسة الخصوصية</a></li>
+        <li><a href="#" data-open-modal="roadmap-modal">خارطة الطريق</a></li>
       </ul>
+    </div>
+    <div>
+      <h4>النشرة البريدية</h4>
+      <p class="footer-newsletter-desc">اعرف أول ما نضيف محتوى أو ميزة جديدة.</p>
+      <form id="newsletter-form" class="newsletter-form">
+        <input type="email" id="newsletter-email" placeholder="بريدك الإلكتروني" required>
+        <button type="submit" class="btn btn-gold btn-sm">اشترك</button>
+      </form>
+      <p id="newsletter-status" class="newsletter-status"></p>
     </div>
     <div>
       <h4 data-i18n="footer.contact">تواصل معنا</h4>
@@ -1085,14 +1109,14 @@
 <div class="fab-group" id="fab-group-left">
   <button class="fab theme-toggle-btn" id="theme-toggle-btn" aria-label="تبديل الوضع الفاتح/الغامق" title="الوضع الفاتح/الغامق">☀️</button>
   <button class="fab" id="surprise-btn" aria-label="فاجئني بقطعة عشوائية" title="فاجئني">🎲</button>
-  <button class="fab" id="to-top" aria-label="العودة للأعلى">↑</button>
-</div>
-
-<div class="fab-group fab-group-right" id="fab-group-right">
   <button class="fab" id="a11y-btn" aria-label="إمكانية الوصول" title="إمكانية الوصول">♿</button>
   <button class="fab" id="suggestion-box-btn" data-open-modal="suggestion-modal" aria-label="صندوق الاقتراحات" title="عندك اقتراح؟">💡</button>
   <button class="fab" id="capsule-trigger-btn" data-open-modal="capsule-modal" aria-label="الكبسولة الزمنية" title="الكبسولة الزمنية">📦</button>
   <button class="fab" id="assistant-trigger-btn" data-open-modal="assistant-modal" aria-label="المرشد الذكي" title="اسأل المرشد الذكي">🤖</button>
+  <button class="fab" id="to-top" aria-label="العودة للأعلى">↑</button>
+</div>
+
+<div class="fab-group fab-group-right" id="fab-group-right">
   <button class="fab" id="learning-path-trigger-btn" data-open-modal="learning-path-modal" aria-label="مسار الزيارة المقترح" title="مش عارف تبدأ منين؟">🧭</button>
   <button class="fab" id="teacher-mode-trigger-btn" data-open-modal="teacher-modal" aria-label="وضع المعلم" title="خطط دروس للمعلمين">🎓</button>
   <button class="fab" id="events-trigger-btn" data-open-modal="events-modal" aria-label="جدول الفعاليات" title="فعاليات المتحف">📅</button>
@@ -1310,6 +1334,40 @@
   </div>
 </div>
 
+<!-- =====================================================================
+     خارطة الطريق (Roadmap)
+     ===================================================================== -->
+<div class="modal-overlay" id="roadmap-modal">
+  <div class="modal-box roadmap-modal-box">
+    <button class="modal-close">✕</button>
+    <h3>🗺️ خارطة طريق المتحف</h3>
+    <p>شفافية كاملة: إيه اللي موجود دلوقتي، وإيه اللي في خطتنا القادمة.</p>
+
+    <div class="roadmap-col">
+      <h4 class="roadmap-status roadmap-live">✅ موجود دلوقتي</h4>
+      <ul>
+        <li>٨٠٠ قطعة أثرية عبر ٨ أقسام وحضارات</li>
+        <li>واقع معزز، ألعاب تفاعلية، وخط زمني حي</li>
+        <li>تقييمات، تعليقات، شارات إنجاز، ولوحة صدارة</li>
+        <li>واجهة بـ٥ لغات، وإتاحة كاملة (تباين، قراءة صوتية)</li>
+        <li>مرشد ذكي، مسار زيارة مقترح، ووضع المعلم</li>
+      </ul>
+    </div>
+
+    <div class="roadmap-col">
+      <h4 class="roadmap-status roadmap-planned">🔜 مخطط له</h4>
+      <ul>
+        <li>ترجمة محتوى القطع الأثرية نفسه (مش بس الواجهة) بمراجعة بشرية</li>
+        <li>فيديوهات بلغة الإشارة لأهم القطع</li>
+        <li>لوحة إحصائيات عامة آمنة للزوار</li>
+        <li>شراكات مؤسسية رسمية (يونسكو وجهات تراث أخرى)</li>
+      </ul>
+    </div>
+
+    <p class="roadmap-note">عندك اقتراح لبند جديد؟ شاركنا من صندوق الاقتراحات 💡</p>
+  </div>
+</div>
+
 <script src="script.js"></script>
 <script src="i18n.js"></script>
 
@@ -1326,6 +1384,8 @@
 <script src="assistant.js"></script>
 <script src="learning-path.js"></script>
 <script src="teacher-mode.js"></script>
+<script src="newsletter.js"></script>
+<script src="wiki-readmore.js"></script>
 <script src="open-data.js"></script>
 <script src="wing-catalog.js"></script>
 <script src="completion-certificate.js"></script>
