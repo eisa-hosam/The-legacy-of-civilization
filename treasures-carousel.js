@@ -3,7 +3,7 @@
    دوّار القطع المميزة: عرض ثلاثي الأبعاد (CSS 3D) لعشر قطع مختارة من
    المجموعة، بيلف تلقائيًا وبيقف عند تمرير الماوس، وكل قطعة قابلة للضغط
    عشان تفتح تفاصيلها الكاملة (بالاستفادة من محرك البحث الموجود بالفعل).
-   الصور المستخدمة هنا كلها من الصور المحلية المستخرجة (images/) لضمان
+   الصور المستخدمة هنا كلها من الصور المحلية المستخرجة (نفس فولدر الموقع) لضمان
    إنها تحمّل صح دايمًا.
    ===================================================================== */
 
@@ -14,16 +14,16 @@
   }
 
   const TREASURES = [
-    { t: 'تمثال الإله تحوت', wingKey: 'egypt', img: 'images/artifact-001.jpg' },
-    { t: 'قناع مومياء لمسحتي', wingKey: 'leaders', img: 'images/artifact-020.jpg' },
-    { t: 'قلادة صدرية من الفيروز واللازورد', wingKey: 'egypt', img: 'images/artifact-009.jpg' },
-    { t: 'عباد الشمس', wingKey: 'paintings', img: 'images/artifact-023.jpg' },
-    { t: 'بنات بحري', wingKey: 'paintings', img: 'images/artifact-021.jpg' },
-    { t: 'درع المصارع (غلاديوس)', wingKey: 'roman', img: 'images/artifact-037.jpg' },
-    { t: 'قلادة عسكرية تكريمية', wingKey: 'roman', img: 'images/artifact-039.jpg' },
-    { t: 'صندوق خشبي مطعم بالصدف', wingKey: 'islamic', img: 'images/artifact-041.jpg' },
-    { t: 'أسطوانة فلكية (كرة سماوية)', wingKey: 'islamic', img: 'images/artifact-042.jpg' },
-    { t: 'كيبو (الحبال المعقودة)', wingKey: 'world', img: 'images/artifact-043.jpg' }
+    { t: 'تمثال الإله تحوت', wingKey: 'egypt', img: 'artifact-001.jpg' },
+    { t: 'قناع مومياء لمسحتي', wingKey: 'leaders', img: 'artifact-020.jpg' },
+    { t: 'قلادة صدرية من الفيروز واللازورد', wingKey: 'egypt', img: 'artifact-009.jpg' },
+    { t: 'عباد الشمس', wingKey: 'paintings', img: 'artifact-023.jpg' },
+    { t: 'بنات بحري', wingKey: 'paintings', img: 'artifact-021.jpg' },
+    { t: 'درع المصارع (غلاديوس)', wingKey: 'roman', img: 'artifact-037.jpg' },
+    { t: 'قلادة عسكرية تكريمية', wingKey: 'roman', img: 'artifact-039.jpg' },
+    { t: 'صندوق خشبي مطعم بالصدف', wingKey: 'islamic', img: 'artifact-041.jpg' },
+    { t: 'أسطوانة فلكية (كرة سماوية)', wingKey: 'islamic', img: 'artifact-042.jpg' },
+    { t: 'كيبو (الحبال المعقودة)', wingKey: 'world', img: 'artifact-043.jpg' }
   ];
 
   function openArtifact(title, wingKey) {
